@@ -1,7 +1,0 @@
-val io = @import("std.io")
-val cli = @import("lune-xml")
-
-
-fn main() {
-io.log("test")
-}
