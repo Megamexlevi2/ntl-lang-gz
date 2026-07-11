@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"lunex/internal/ast"
 	"lunex/internal/errfmt"
-	"lunex/internal/jit"
 	"strings"
 	"time"
 )
@@ -229,7 +228,7 @@ func (interp *Interpreter) callUserFunction(fn *Function, args []*Value, thisVal
 		}()
 	}
 
-	var fnProf *jit.FnProfile
+	var fnProf *FnProfile
 	var t0 int64
 	if fn.Name != "" {
 		fnProf = interp.profiler.GetOrCreate(fn.Name)
@@ -318,9 +317,7 @@ func (interp *Interpreter) callUserFunction(fn *Function, args []*Value, thisVal
 
 	if fnProf != nil && t0 != 0 {
 		elapsed := time.Now().UnixNano() - t0
-		if interp.profiler.RecordAndCheckHot(fn.Name, elapsed) {
-			fnProf.PromoteToFastGo()
-		}
+		fnProf.Record(elapsed)
 	}
 
 	if execErr != nil {

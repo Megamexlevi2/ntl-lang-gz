@@ -153,17 +153,6 @@ func animateStep(label, result string, useColor bool) {
 	}
 }
 
-func detectJITLabel() string {
-	arch := runtime.GOARCH
-	goos := runtime.GOOS
-	switch {
-	case (goos == "linux" || goos == "android" || goos == "darwin" || goos == "windows") && (arch == "amd64" || arch == "arm64"):
-		return "Lunex runtime + native " + arch + " JIT"
-	default:
-		return "Lunex runtime (interpreted mode)"
-	}
-}
-
 func shortenHome(path string) string {
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -230,7 +219,6 @@ func showWelcomeAnimation(version string, useColor bool) {
 	animateStep("Detecting OS / architecture", goos+"/"+arch, useColor)
 	animateStep("Initializing bytecode cache", cacheDisplay, useColor)
 	animateStep("Loading standard library", "13 modules ready", useColor)
-	animateStep("Configuring JIT runtime", detectJITLabel(), useColor)
 
 	fmt.Println()
 

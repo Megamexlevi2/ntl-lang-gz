@@ -62,7 +62,6 @@ Key directories:
 | `internal/bytecode/` | Archive compiler and VM |
 | `internal/std/` | Standard library modules |
 | `internal/errfmt/` | Error formatting and error codes |
-| `internal/jit/` | JIT cache and native fast paths |
 | `internal/compiler/` | Source compiler pipeline |
 | `internal/formatter/` | `lunex fmt` pretty-printer |
 | `examples/` | Runnable example programs |
@@ -102,7 +101,6 @@ lunex-lang-gz/
 │   ├── std/                Standard library (one file per module)
 │   ├── errfmt/             Error codes, formatting, catalog
 │   ├── formatter/          Source code formatter
-│   ├── jit/                JIT profiler, cache, native fast paths
 │   ├── meta/               Version metadata and integrity
 │   ├── pkg/                Package manager
 │   ├── buildfile/          config.lx parser

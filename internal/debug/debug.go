@@ -172,17 +172,8 @@ func BytecodeSection(totalBytes, ntzBytes int, hasNTZ bool) {
 	} else {
 		fmt.Fprintf(os.Stderr, "%s         ├─ NTZ section: absent%s\n", cDim, cReset)
 	}
-	fmt.Fprintf(os.Stderr, "%s         └─ Go interpreter executes source text; fast-Go loop optimizations active%s\n",
+	fmt.Fprintf(os.Stderr, "%s         └─ Go interpreter executes source text%s\n",
 		cDim, cReset)
-}
-
-func BytecodeJITHit(fnName string, codeBytes int, report string) {
-	if !enabled {
-		return
-	}
-	fmt.Fprintf(os.Stderr,
-		"%s  %s[jit]%s compiled hot fn %s%q%s  code=%d B  %s%s%s\n",
-		cDim, cGreen, cReset, cCyan, fnName, cReset, codeBytes, cDim, report, cReset)
 }
 
 func MemStats() {

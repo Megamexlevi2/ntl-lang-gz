@@ -13,7 +13,6 @@ import (
 	dbg "lunex/internal/debug"
 	"lunex/internal/errfmt"
 	"lunex/internal/firstrun"
-	"lunex/internal/jit"
 	"lunex/internal/meta"
 	"lunex/internal/pkg"
 	"lunex/internal/runtime"
@@ -362,13 +361,6 @@ fn mul(a, b) {
 
 	case "platform":
 		fmt.Print(adaptor.Info())
-
-	case "jitcache":
-		if len(args) > 1 && args[1] == "clear" {
-			clearJITCache()
-		} else {
-			showJITCacheInfo()
-		}
 
 	case "runtimes":
 		showRuntimes()
@@ -1318,23 +1310,8 @@ func clearCache() {
 	fmt.Println("cache cleared")
 }
 
-func showJITCacheInfo() {
-	count, totalBytes := jit.JITCacheInfo()
-	fmt.Printf("JIT cache entries: %d  (%d KB)\n", count, totalBytes/1024)
-}
-
-func clearJITCache() {
-	n, err := jit.ClearJITCache()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "error:", err)
-		os.Exit(1)
-	}
-	fmt.Printf("JIT cache cleared (%d entries removed)\n", n)
-}
-
 func showRuntimes() {
 	fmt.Printf("Go interpreter:   available  (handles all Lunex execution)\n")
-	fmt.Printf("Native fast paths: enabled  (pure-Go loop optimizations)\n")
 }
 
 func setCacheDir(dir string) {
@@ -1518,7 +1495,6 @@ Standard library modules (13):
   utils      String, array, and object helpers
 
 `)
-	_ = jit.JITCacheDir
 }
 
 const (

@@ -164,10 +164,6 @@ func CacheDir() string {
 	return subDir("cache")
 }
 
-func JITCacheDir() string {
-	return subDir(filepath.Join("jit", runtime.GOOS+"_"+runtime.GOARCH))
-}
-
 func NativeCacheDir() string {
 	return subDir(filepath.Join("ncache", runtime.GOOS+"_"+runtime.GOARCH))
 }
@@ -523,13 +519,6 @@ func Info() string {
 		fmt.Fprintf(&sb, "cache dir      : (unavailable — memory only)\n")
 	} else {
 		fmt.Fprintf(&sb, "cache dir      : %s\n", ShortenHome(cacheDir))
-	}
-
-	jitDir := JITCacheDir()
-	if jitDir == "" {
-		fmt.Fprintf(&sb, "jit cache dir  : (unavailable — memory only)\n")
-	} else {
-		fmt.Fprintf(&sb, "jit cache dir  : %s\n", ShortenHome(jitDir))
 	}
 
 	nativeDir := NativeCacheDir()

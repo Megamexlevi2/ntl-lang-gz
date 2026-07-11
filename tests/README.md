@@ -51,7 +51,7 @@ The original test scripts are also preserved at the top of `tests/`:
 |---|---|
 | `test.lx` | General language smoke test |
 | `test_io.lx` | I/O module test |
-| `test_jit.lx` | JIT cache test |
+| `test_timing.lx` | `std.utils.now()` timestamp sanity check |
 | `test_utils.lx` | Utils module test |
 | `test_xml.lx` | XML parsing (requires `lune-xml` package) |
 | `main.lx` | Local module import via `@fimport` |

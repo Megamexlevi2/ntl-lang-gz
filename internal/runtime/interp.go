@@ -3,7 +3,6 @@ package runtime
 import (
 	"lunex/internal/ast"
 	"lunex/internal/errfmt"
-	"lunex/internal/jit"
 	"strings"
 	"sync"
 )
@@ -26,7 +25,7 @@ type deferEntry struct {
 type Interpreter struct {
 	globals       *Environment
 	topEnv        *Environment
-	profiler      *jit.Profiler
+	profiler      *Profiler
 	modules       map[string]*Value
 	mu            sync.RWMutex
 	filename      string
@@ -49,7 +48,7 @@ type Interpreter struct {
 func NewInterpreter() *Interpreter {
 	interp := &Interpreter{
 		globals:      NewEnvironment(nil),
-		profiler:     jit.NewProfiler(true),
+		profiler:     NewProfiler(),
 		modules:      make(map[string]*Value),
 		maxExecSteps: 2_000_000,
 		spawnSlots:   make(chan struct{}, 256),

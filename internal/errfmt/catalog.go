@@ -15,9 +15,6 @@ const (
 	EAssertion      uint16 = 4013
 	EUserPanic      uint16 = 4014
 	EInvalidRegex   uint16 = 4015
-	EJITAlloc       uint16 = 5001
-	EJITUnsupported uint16 = 5002
-	EJITCodegen     uint16 = 5003
 	EIORead         uint16 = 7001
 	EIOWrite        uint16 = 7002
 	EBadBCFormat    uint16 = 7003
@@ -41,9 +38,6 @@ var catalog = map[uint16]entry{
 	EAssertion:      {"Assertion failed. Review the condition that triggered it."},
 	EUserPanic:      {"Explicit panic. Read the panic message for context."},
 	EInvalidRegex:   {"Invalid regex. Check the pattern for typos."},
-	EJITAlloc:       {"JIT: can't allocate executable memory. Falling back to interpreter."},
-	EJITUnsupported: {"JIT: unsupported CPU. Falling back to interpreter."},
-	EJITCodegen:     {"JIT: code generation failed. Falling back to interpreter."},
 	EIORead:         {"Read error. Check path, permissions, and disk space."},
 	EIOWrite:        {"Write error. Check disk space and permissions."},
 	EBadBCFormat:    {"Not a valid .nax file. Use 'lunex build' to produce one."},

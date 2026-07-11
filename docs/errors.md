@@ -115,7 +115,7 @@ Error codes follow the pattern `E####` for hard errors.
 | E0062 | ArchiveVersionMismatch  | `.nax` archive compiled with an incompatible Lunex version     |
 | E0063 | ArchiveCorrupt          | `.nax` file is malformed or incomplete                          |
 | E0064 | CacheCorrupt            | Bytecode cache entry is corrupt (`lunex memcache clear` to fix) |
-| E0065 | JITCompileError         | JIT compilation failed; falling back to interpreter             |
+| E0065 | TimeoutError            | Operation exceeded its deadline                                 |
 | E0066 | NativeLoadError         | Native extension failed to load                                 |
 | E0067 | PackageInstallError     | Package download or compilation failed                          |
 | E0068 | ManifestError           | `config.lx` is malformed                                        |

@@ -263,7 +263,7 @@ lunex platform
 
 ### `lunex runtimes`
 
-List available execution engines (interpreter, archive loader, JIT).
+List available execution engines (interpreter, archive loader).
 
 ```
 lunex runtimes
@@ -280,8 +280,6 @@ lunex cache               # inspect on-disk archive cache
 lunex cache clear         # clear on-disk cache
 lunex memcache            # inspect in-process memory cache
 lunex memcache clear      # clear memory cache
-lunex jitcache            # inspect JIT cache
-lunex jitcache clear      # clear JIT cache
 ```
 
 ---
