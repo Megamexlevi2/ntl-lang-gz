@@ -1,26 +1,3 @@
-// Package bytecode — NAX archive format.
-//
-// A .nax file is Lunex's own archive format. It is NOT a zip file. It will
-// never open with zip, tar, or any other standard archive tool — that is
-// intentional. The format uses a custom magic header that no archive tool
-// recognises, followed by a scrambled payload with a SHA-256 integrity
-// digest. The only thing that can read a .nax is the Lunex runtime itself.
-//
-// Wire layout (little-endian):
-//
-//   [0:8]   magic        — 0x4C 0x58 0x4E 0x41 0x58 0x02 0x00 0x1A
-//                          ("LXNAX\x02\x00\x1A" — chosen to be invalid in
-//                          every common archive format: not PK, not GZ,
-//                          not BZ2, not XZ, not 7z, not RAR, not TAR)
-//   [8:10]  version      — uint16 LE, currently 0x0700
-//   [10]    kind         — 0xB2 (archive kind tag)
-//   [11]    reserved     — 0x00
-//   [12:16] payload_len  — uint32 LE, scrambled payload size in bytes
-//   [16:20] entry_count  — uint32 LE
-//   [20:24] main_index   — uint32 LE, index of the entry-point .nc entry
-//   [24:40] digest       — first 16 bytes of SHA-256 over the plain payload
-//   [40:]   payload      — scrambled bytes (see naxScramble)
-
 package bytecode
 
 import (
@@ -34,31 +11,18 @@ import (
 	"time"
 )
 
-// naxMagic is the 8-byte file signature for .nax archives.
-// Chosen so that no standard tool will try to open it:
-//   - Not "PK\x03\x04" (zip)
-//   - Not "\x1f\x8b"   (gzip)
-//   - Not "BZh"        (bzip2)
-//   - Not "\xfd7zXZ"   (xz)
-//   - Not "7z\xbc\xaf" (7-zip)
-//   - Not "Rar!"       (rar)
-//
-// The 0x1A byte at position 7 is a traditional EOF marker that causes
-// "type" on Windows to stop printing, adding a second layer of opacity.
 var naxMagic = [8]byte{'L', 'X', 'N', 'A', 'X', 0x02, 0x00, 0x1A}
 
 const naxVersion uint16 = 0x0700
 const naxHeaderSize = 40
 const naxKind byte = 0xB2
 
-// Legacy layout kept for backward compatibility with older builds.
 var legacyNAXMagic = [5]byte{'x', '1', '0', '2', 'c'}
 
 const legacyNAXVersion uint16 = 0x0600
 const legacyNAXHeaderSize = 37
 const legacyNAXKind byte = 0xA1
 
-// Even older NTL-era layout.
 var ntlNAXMagic = [4]byte{'n', 't', 'l', 'x'}
 
 const ntlNAXVersion uint16 = 0x0500
@@ -68,13 +32,11 @@ var ntlNAXInternalMagic = [4]byte{0x3d, 0x7e, 0xa1, 0x02}
 
 const ntlNAXInternalVersion uint16 = 0x0603
 
-// NAXEntry is one file stored inside a .nax archive.
 type NAXEntry struct {
 	Name string
 	Data []byte
 }
 
-// NAXArchive is the in-memory representation of a .nax archive.
 type NAXArchive struct {
 	Version   uint16
 	BuildTime int64
@@ -95,7 +57,6 @@ func buildNAXHeader(payloadLen, entryCount, mainIndex uint32, digest [16]byte) [
 	return hdr
 }
 
-// PackDirectory compiles all .lx files in dir and packs them into a .nax archive.
 func PackDirectory(dir string, outputFile string) error {
 	arch := &NAXArchive{
 		Version:   naxVersion,
@@ -143,7 +104,7 @@ func PackDirectory(dir string, outputFile string) error {
 				SourceFile: path,
 				SourceText: string(source),
 			}
-			ncData, err := EncodeExportedWithAST(chunk, result.AST)
+			objectData, err := EncodeExportedWithAST(chunk, result.AST)
 			if err != nil {
 				return fmt.Errorf("compile error for %s: %w", rel, err)
 			}
@@ -154,12 +115,12 @@ func PackDirectory(dir string, outputFile string) error {
 			entries = append(entries, struct {
 				name string
 				data []byte
-			}{name: strings.TrimSuffix(rel, ".lx") + ".nc", data: ncData})
+			}{name: strings.TrimSuffix(rel, ".lx") + ".nax", data: objectData})
 			if base == "main.lx" {
 				arch.MainIndex = uint32(len(entries) - 1)
 				mainFound = true
 			}
-		case ".nc":
+		case ".nax":
 			data, err := os.ReadFile(path)
 			if err != nil {
 				return fmt.Errorf("cannot read %s: %w", rel, err)
@@ -168,7 +129,7 @@ func PackDirectory(dir string, outputFile string) error {
 				name string
 				data []byte
 			}{name: rel, data: data})
-			if base == "main.nc" {
+			if base == "main.nax" {
 				arch.MainIndex = uint32(len(entries) - 1)
 				mainFound = true
 			}
@@ -188,7 +149,7 @@ func PackDirectory(dir string, outputFile string) error {
 	}
 	if !mainFound {
 		return fmt.Errorf(
-			"no main.lx or main.nc found in %s\n  a .nax archive requires main.lx as its entry point\n  create main.lx with your program's entry point first",
+			"no main.lx or main.nax found in %s\n  a .nax archive requires main.lx as its entry point\n  create main.lx with your program's entry point first",
 			dir,
 		)
 	}
@@ -201,7 +162,6 @@ func PackDirectory(dir string, outputFile string) error {
 	return os.WriteFile(outputFile, raw, 0644)
 }
 
-// PackNAXArchive encodes arch and writes it to outputFile.
 func PackNAXArchive(arch *NAXArchive, outputFile string) error {
 	if arch == nil {
 		return fmt.Errorf("archive is nil")
@@ -219,7 +179,6 @@ func PackNAXArchive(arch *NAXArchive, outputFile string) error {
 	return os.WriteFile(outputFile, raw, 0644)
 }
 
-// LoadNAX reads a .nax file from disk and decodes it.
 func LoadNAX(path string) (*NAXArchive, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -228,7 +187,6 @@ func LoadNAX(path string) (*NAXArchive, error) {
 	return decodeNAX(data)
 }
 
-// NAXGetEntry returns the raw bytes of the named entry, or (nil, false).
 func NAXGetEntry(arch *NAXArchive, name string) ([]byte, bool) {
 	for _, e := range arch.Entries {
 		if e.Name == name {
@@ -262,17 +220,17 @@ func encodeNAXGo(arch *NAXArchive) ([]byte, error) {
 }
 
 func decodeNAX(data []byte) (*NAXArchive, error) {
-	// Current format: 8-byte magic "LXNAX\x02\x00\x1A"
+
 	if len(data) >= naxHeaderSize && bytes.Equal(data[0:8], naxMagic[:]) {
 		return decodeCurrentNAX(data)
 	}
-	// Legacy x102 format: 5-byte magic "x102c"
+
 	if len(data) >= legacyNAXHeaderSize && bytes.Equal(data[0:5], legacyNAXMagic[:]) {
 		if data[7] == legacyNAXKind {
 			return decodeLegacyX102NAX(data)
 		}
 	}
-	// NTL-era format: 4-byte magic "ntlx"
+
 	if len(data) >= ntlNAXHeaderSize && bytes.Equal(data[0:4], ntlNAXMagic[:]) {
 		return decodeNTLNAX(data)
 	}
@@ -479,8 +437,6 @@ func decodeNTLNAX(data []byte) (*NAXArchive, error) {
 	return arch, nil
 }
 
-// naxKey is the 64-byte XOR key used in naxScramble/naxUnscramble.
-// Chosen to produce output that does not resemble any known file format.
 var naxKey = []byte{
 	0x9b, 0xe4, 0x2c, 0x71, 0xd3, 0x5a, 0x08, 0xf6,
 	0x47, 0xbc, 0x1e, 0x83, 0x60, 0xad, 0x35, 0x7f,
@@ -492,10 +448,6 @@ var naxKey = []byte{
 	0x52, 0xaf, 0x04, 0x99, 0x6b, 0xd8, 0x20, 0x7c,
 }
 
-// naxScramble encrypts payload bytes using a chained XOR cipher.
-// The chain dependency (each output byte affects the next) means that
-// even identical plaintext produces different ciphertext at each position,
-// so file carvers and format sniffers cannot recover recognisable structure.
 func naxScramble(data []byte) []byte {
 	out := make([]byte, len(data))
 	kl := len(naxKey)
@@ -524,10 +476,6 @@ func naxUnscramble(data []byte) []byte {
 	return out
 }
 
-// ExtractNAXEntry decodes a .nax archive and returns the main entry's .nc bytes.
-// unpackNAXData decodes the .nax archive in data and writes every entry as a
-// file under outDir, creating subdirectories as needed.  It returns the number
-// of files written.
 func unpackNAXData(data []byte, outDir string) (int, error) {
 	arch, err := decodeNAX(data)
 	if err != nil {
@@ -538,7 +486,7 @@ func unpackNAXData(data []byte, outDir string) (int, error) {
 		if entry.Name == "" {
 			continue
 		}
-		// Clean the entry path to prevent directory traversal.
+
 		clean := filepath.Clean(filepath.Join(outDir, filepath.FromSlash(entry.Name)))
 		if !strings.HasPrefix(clean, outDir+string(filepath.Separator)) {
 			return count, fmt.Errorf("archive entry %q has an unsafe path — skipping", entry.Name)
@@ -549,7 +497,7 @@ func unpackNAXData(data []byte, outDir string) (int, error) {
 		if err := os.WriteFile(clean, entry.Data, 0644); err != nil {
 			return count, fmt.Errorf("writing %q: %w", entry.Name, err)
 		}
-		// Preserve the build timestamp as file mtime (best-effort).
+
 		if arch.BuildTime > 0 {
 			mtime := time.Unix(arch.BuildTime, 0)
 			_ = os.Chtimes(clean, mtime, mtime)

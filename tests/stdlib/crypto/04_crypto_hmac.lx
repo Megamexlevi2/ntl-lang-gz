@@ -1,6 +1,3 @@
-// Lunex — crypto — HMAC
-// Sign messages with HMAC-SHA256
-// Lunex v0.8.1 · github.com/Megamexlevi2/lunex-lang-gz
 
 val io = @import("std.io"); val crypto = @import("std.crypto")
 fn main() {

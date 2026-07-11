@@ -1,5 +1,3 @@
-// David Dev — (c) 2026. Licensed under the Mozilla Public License 2.0.
-
 package runtime
 
 import (
@@ -16,9 +14,6 @@ type throwSignal struct{ value *Value }
 
 type NTLLoader func(name string) (string, bool)
 
-// NTLFileLoader is like NTLLoader but also returns the real on-disk path of
-// the loaded file. This lets the interpreter set interp.filename to the real
-// path so that @fimport("./relative.lx") inside a package resolves correctly.
 type NTLFileLoader func(name string) (src, realPath string, ok bool)
 
 type NaxLoader func(path string) (*Value, error)
@@ -46,13 +41,18 @@ type Interpreter struct {
 	callDepth     int
 	templateCache sync.Map
 	numCache      sync.Map
+	execSteps     int64
+	maxExecSteps  int64
+	spawnSlots    chan struct{}
 }
 
 func NewInterpreter() *Interpreter {
 	interp := &Interpreter{
-		globals:  NewEnvironment(nil),
-		profiler: jit.NewProfiler(true),
-		modules:  make(map[string]*Value),
+		globals:      NewEnvironment(nil),
+		profiler:     jit.NewProfiler(true),
+		modules:      make(map[string]*Value),
+		maxExecSteps: 2_000_000,
+		spawnSlots:   make(chan struct{}, 256),
 	}
 	interp.registerBuiltins()
 	CallFunction = func(fn *Value, args []*Value, this ...*Value) (*Value, error) {

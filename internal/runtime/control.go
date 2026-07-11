@@ -1,5 +1,3 @@
-// David Dev — (c) 2026. Licensed under the Mozilla Public License 2.0.
-
 package runtime
 
 import (
@@ -248,7 +246,7 @@ func (interp *Interpreter) execTry(node *ast.Node, env *Environment) (*Value, er
 				}
 				catchResult, catchErr := interp.execNode(node.CatchBlock, catchEnv)
 				if catchErr != nil {
-					// Propagate the catch error even if there is a finally block.
+
 					if node.FinallyBlock != nil {
 						interp.execNode(node.FinallyBlock, env)
 					}

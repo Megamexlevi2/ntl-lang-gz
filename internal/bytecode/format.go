@@ -1,26 +1,3 @@
-// Lunex lang — .nc bytecode container format.
-//
-// Go lexes, parses, and compiles .lx source into an AST, then encodes it
-// here into a .nc container.  The container has two sections:
-//
-//   1. A scrambled payload holding the module name, source path, and
-//      source text — used by the Go interpreter.
-//   2. An NTZ opcode section appended at the end — reserved for future use.
-//
-// The Go tree-walking interpreter executes source text embedded in the
-// payload.  Fast-Go loop optimizations are applied transparently at runtime.
-//
-// Wire layout (little-endian, current format X102):
-//
-//   [0:5]   magic        — 0x78 0x31 0x30 0x32 0x63 (x102c)
-//   [5:7]   version      — uint16 LE, 0x0600
-//   [7]     flags        — 0x01 = valid, 0x03 = valid + has NTZ section
-//   [8:12]  payload_len  — uint32 LE, scrambled payload size
-//   [12:16] ntz_len      — uint32 LE, NTZ opcode section size (0 if absent)
-//   [16:32] digest       — first 16 bytes of SHA-256 over the plain payload
-//   [32:]   payload      — scrambled bytes (xorScramble)
-//   [end]   NTZ opcodes  — raw opcode bytes (unscrambled), appended after payload
-
 package bytecode
 
 import (
@@ -31,11 +8,8 @@ import (
 	"io"
 )
 
-// useSelfHosted is permanently disabled. The pure Go encoder always runs,
-// producing the NTZ section inside every .nc container.
 var useSelfHosted = false
 
-// SetSelfHosted is a no-op kept for API compatibility.
 func SetSelfHosted(_ bool) {}
 
 var x102Magic = [5]byte{'x', '1', '0', '2', 'c'}
@@ -43,17 +17,15 @@ var x102Magic = [5]byte{'x', '1', '0', '2', 'c'}
 const x96Version uint16 = 0x0600
 const x102HeaderSize = 32
 
-// Legacy NTLI/NC format kept for backward compatibility.
-var legacyNCMagic = [4]byte{'n', 't', 'l', 'i'}
+var legacyObjectMagic = [4]byte{'n', 't', 'l', 'i'}
 
-const legacyNCVersion uint16 = 0x0500
-const legacyNCHeaderSize = 48
+const legacyObjectVersion uint16 = 0x0500
+const legacyObjectHeaderSize = 48
 
 var legacyInternalMagic = [4]byte{0x1c, 0x9a, 0x4e, 0x03}
 
 const legacyInternalVersion uint16 = 0x0603
 
-// buildX96Header constructs the 32-byte X96 file header.
 func buildX102Header(payloadLen uint32, ntzLen uint32, digest [16]byte) [x102HeaderSize]byte {
 	var hdr [x102HeaderSize]byte
 	copy(hdr[0:5], x102Magic[:])
@@ -69,11 +41,11 @@ func buildX102Header(payloadLen uint32, ntzLen uint32, digest [16]byte) [x102Hea
 	return hdr
 }
 
-func EncodeNC(chunk *Chunk) ([]byte, error) {
-	return EncodeNCWithNTZ(chunk, nil)
+func EncodeObject(chunk *Chunk) ([]byte, error) {
+	return EncodeObjectWithNTZ(chunk, nil)
 }
 
-func EncodeNCWithNTZ(chunk *Chunk, ntzOpcodes []byte) ([]byte, error) {
+func EncodeObjectWithNTZ(chunk *Chunk, ntzOpcodes []byte) ([]byte, error) {
 	return encodeNCWithNTZ(chunk, ntzOpcodes)
 }
 
@@ -95,24 +67,24 @@ func encodeNCWithNTZ(chunk *Chunk, ntzOpcodes []byte) ([]byte, error) {
 
 	var buf bytes.Buffer
 	buf.Write(hdr[:])
-	buf.Write(xorScramble(plain, ncKey))
+	buf.Write(xorScramble(plain, objectKey))
 	if len(ntzOpcodes) > 0 {
 		buf.Write(ntzOpcodes)
 	}
 	return buf.Bytes(), nil
 }
 
-func DecodeNC(data []byte) (*Chunk, error) {
+func DecodeObject(data []byte) (*Chunk, error) {
 	if len(data) >= x102HeaderSize && bytes.Equal(data[0:5], x102Magic[:]) {
-		return decodeX96NC(data)
+		return decodeX96Object(data)
 	}
-	if len(data) >= legacyNCHeaderSize && bytes.Equal(data[0:4], legacyNCMagic[:]) {
-		return decodeLegacyNC(data)
+	if len(data) >= legacyObjectHeaderSize && bytes.Equal(data[0:4], legacyObjectMagic[:]) {
+		return decodeLegacyObject(data)
 	}
 	return nil, fmt.Errorf("invalid object: not a recognized Lunex format")
 }
 
-func decodeX96NC(data []byte) (*Chunk, error) {
+func decodeX96Object(data []byte) (*Chunk, error) {
 	if len(data) < x102HeaderSize+8 {
 		return nil, fmt.Errorf("invalid object: file too short")
 	}
@@ -136,7 +108,7 @@ func decodeX96NC(data []byte) (*Chunk, error) {
 	}
 
 	encPayload := data[x102HeaderSize : x102HeaderSize+int(payloadLen)]
-	plain := xorUnscramble(encPayload, ncKey)
+	plain := xorUnscramble(encPayload, objectKey)
 	got := digest16(plain)
 	if !bytes.Equal(got[:], data[16:32]) {
 		return nil, fmt.Errorf("invalid object: payload checksum mismatch")
@@ -190,8 +162,8 @@ func decodeX96NC(data []byte) (*Chunk, error) {
 	return chunk, nil
 }
 
-func decodeLegacyNC(data []byte) (*Chunk, error) {
-	if len(data) < legacyNCHeaderSize+8 {
+func decodeLegacyObject(data []byte) (*Chunk, error) {
+	if len(data) < legacyObjectHeaderSize+8 {
 		return nil, fmt.Errorf("invalid object: file too short")
 	}
 	if data[0] != 'n' || data[1] != 't' || data[2] != 'l' || data[3] != 'i' {
@@ -199,23 +171,23 @@ func decodeLegacyNC(data []byte) (*Chunk, error) {
 	}
 
 	ver := binary.LittleEndian.Uint16(data[5:7])
-	if ver != legacyNCVersion {
+	if ver != legacyObjectVersion {
 		return nil, fmt.Errorf("invalid object: version mismatch (got 0x%04x)", ver)
 	}
 
 	ntzLen := binary.LittleEndian.Uint32(data[40:44])
 	payloadEnd := len(data)
 	if ntzLen > 0 {
-		if int(ntzLen) > payloadEnd-legacyNCHeaderSize {
+		if int(ntzLen) > payloadEnd-legacyObjectHeaderSize {
 			return nil, fmt.Errorf("invalid object: NTZ section length is invalid")
 		}
 		payloadEnd -= int(ntzLen)
 	}
-	if payloadEnd < legacyNCHeaderSize {
+	if payloadEnd < legacyObjectHeaderSize {
 		return nil, fmt.Errorf("invalid object: payload truncated")
 	}
 
-	payload := xorUnscramble(data[legacyNCHeaderSize:payloadEnd], ncKey)
+	payload := xorUnscramble(data[legacyObjectHeaderSize:payloadEnd], objectKey)
 	if len(payload) < 8 {
 		return nil, fmt.Errorf("invalid object: corrupt payload")
 	}
@@ -294,18 +266,17 @@ func NTZSection(data []byte) []byte {
 		}
 		return data[len(data)-int(ntzLen):]
 	}
-	if len(data) < legacyNCHeaderSize || !bytes.Equal(data[0:4], legacyNCMagic[:]) {
+	if len(data) < legacyObjectHeaderSize || !bytes.Equal(data[0:4], legacyObjectMagic[:]) {
 		return nil
 	}
 	ntzLen := binary.LittleEndian.Uint32(data[40:44])
-	if ntzLen == 0 || int(ntzLen) > len(data)-legacyNCHeaderSize {
+	if ntzLen == 0 || int(ntzLen) > len(data)-legacyObjectHeaderSize {
 		return nil
 	}
 	return data[len(data)-int(ntzLen):]
 }
 
-// 64-byte XOR key used to scramble the NC payload.
-var ncKey = []byte{
+var objectKey = []byte{
 	0xc7, 0x3b, 0xa2, 0x58, 0xf1, 0x0d, 0x6e, 0x94,
 	0x27, 0xbb, 0x43, 0xe0, 0x7c, 0x15, 0xd8, 0xa9,
 	0x52, 0xfe, 0x30, 0x8d, 0x61, 0x1a, 0xc4, 0x77,

@@ -1,6 +1,6 @@
 # Language Reference
 
-Complete reference for the Lunex programming language, version 0.8.1.
+Complete reference for the Lunex programming language, version 0.9.0.
 
 ---
 

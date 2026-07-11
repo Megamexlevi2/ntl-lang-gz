@@ -1,6 +1,3 @@
-// XML entity (de)serialization helpers.
-// Shared by the parser (decoding) and the builder (encoding) so that
-// parse(build(node)) and build(parse(src)) round-trip correctly.
 
 fn _isDigit(ch) { ch >= "0" and ch <= "9" }
 
@@ -8,8 +5,6 @@ fn _isHexDigit(ch) {
   _isDigit(ch) or (ch >= "a" and ch <= "f") or (ch >= "A" and ch <= "F")
 }
 
-// Length of a numeric character reference (&#169; / &#x2764;) starting
-// at position i in src, or 0 if there isn't one there.
 fn numericEntityLen(src, i) {
   var result = 0
   if src.slice(i, i + 2) != "&#" {
@@ -46,18 +41,6 @@ fn numericEntityLen(src, i) {
   result
 }
 
-// Decode the 5 predefined XML entities: &amp; &lt; &gt; &quot; &apos;
-//
-// Numeric character references (&#169; / &#x2764;) are preserved
-// verbatim rather than resolved to the actual Unicode character —
-// Lunex currently has no codepoint -> character primitive. They still
-// round-trip correctly because escapeText/escapeAttr below recognize
-// and pass them through unchanged.
-//
-// Any other "&" that isn't part of a recognized entity is treated as
-// a literal ampersand, which escapeText/escapeAttr will turn back into
-// "&amp;" on output — this "fixes" not-quite-well-formed input rather
-// than corrupting it.
 fn decode(s) {
   var out = ""
   var i   = 0
@@ -95,8 +78,6 @@ fn decode(s) {
   out
 }
 
-// Escape text-node content: & < >  — plus pass numeric character
-// references already present straight through (see decode above).
 fn escapeText(s) {
   var out = ""
   var i   = 0
@@ -125,10 +106,6 @@ fn escapeText(s) {
   out
 }
 
-// Escape a double-quoted attribute value: same as escapeText, plus
-// '"' and the whitespace characters that XML attribute-value
-// normalization would otherwise mangle (tab/newline/CR -> numeric
-// character references, so they survive a round trip intact).
 fn escapeAttr(s) {
   var out = ""
   var i   = 0

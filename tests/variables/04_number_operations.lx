@@ -1,6 +1,3 @@
-// Lunex — number operations
-// Arithmetic, modulo, comparison
-// Lunex v0.8.1 · github.com/Megamexlevi2/lunex-lang-gz
 
 val io   = @import("std.io")
 val math = @import("std.math")

@@ -1,22 +1,17 @@
-// Example 19 — Higher-order functions and closures
 val io = @import("std.io")
 
-// Returns a function that multiplies by n
 fn multiplier(n) {
   fn(x) { x * n }
 }
 
-// Returns an adder closure
 fn adder(n) {
   fn(x) { x + n }
 }
 
-// Compose two functions: compose(f, g)(x) = f(g(x))
 fn compose(f, g) {
   fn(x) { f(g(x)) }
 }
 
-// Memoize: cache results of a pure function
 fn memoize(f) {
   val cache = struct {}
   fn(x) {
@@ -32,7 +27,6 @@ fn memoize(f) {
 }
 
 fn main() {
-  // Closures
   val double  = multiplier(2)
   val triple  = multiplier(3)
   val addTen  = adder(10)
@@ -41,20 +35,16 @@ fn main() {
   io.log("triple(5):", triple(5))
   io.log("addTen(5):", addTen(5))
 
-  // Composition
   val doubleThenAdd10 = compose(addTen, double)
   io.log("doubleThenAdd10(3):", doubleThenAdd10(3))
 
-  // map / filter / reduce with inline functions
   val nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
   io.log("evens:    ", nums.filter(fn(x) { x % 2 == 0 }))
   io.log("squares:  ", nums.map(fn(x) { x * x }))
   io.log("sum:      ", nums.reduce(fn(acc, x) { acc + x }, 0))
   io.log("product:  ", nums.reduce(fn(acc, x) { acc * x }, 1))
 
-  // Memoized slow function
   val slowSquare = memoize(fn(x) {
-    // simulate work
     var i = 0
     while i < 1000 { i = i + 1 }
     x * x
@@ -62,7 +52,6 @@ fn main() {
   io.log("memoize first call  slowSquare(7):", slowSquare(7))
   io.log("memoize second call slowSquare(7):", slowSquare(7))
 
-  // Functions as arguments
   fn applyAll(fns, value) {
     each f in fns {
       io.log("  result:", f(value))

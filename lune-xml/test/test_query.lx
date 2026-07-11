@@ -7,38 +7,29 @@ fn run() {
   val src = "<store><product id=\"p1\" category=\"electronics\"><name>Laptop</name><price>999</price></product><product id=\"p2\" category=\"books\"><name>Clean Code</name><price>39</price></product><product id=\"p3\" category=\"electronics\"><name>Phone</name><price>699</price></product></store>"
   val doc = xml.parse(src)
 
-  // selectAll — recursive
   val allProducts = xml.selectAll(doc, "product")
   io.log("all products:", allProducts.length)
 
-  // selectFirst — returns first match
   val first = xml.selectFirst(doc, "product")
   io.log("first product id:", xml.attr(first, "id"))
 
-  // selectByAttr
   val electronics = xml.selectByAttr(doc, "category", "electronics")
   io.log("electronics:", electronics.length)
 
-  // selectPath
   val name = xml.selectPath(doc, "store.product.name")
   io.log("path select name:", xml.text(name))
 
-  // children — direct only
   val kids = xml.children(doc)
   io.log("direct children:", kids.length)
 
-  // childrenByTag — direct only, by tag
   val directProds = xml.childrenByTag(doc, "product")
   io.log("direct products:", directProds.length)
 
-  // attr shorthand
   io.log("attr shorthand:", xml.attr(first, "category"))
 
-  // text shorthand
   val priceNode = xml.selectFirst(first, "price")
   io.log("text shorthand:", xml.text(priceNode))
 
-  // selectFirst returns null when not found
   val missing = xml.selectFirst(doc, "nonexistent")
   io.log("missing returns null:", missing == null)
 

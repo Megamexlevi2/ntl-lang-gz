@@ -1,19 +1,7 @@
-// Validation helpers
-// All functions return { ok: bool, error: string }
 
 fn _err(msg) { { ok: false, error: msg } }
 fn _ok()     { { ok: true,  error: "" } }
 
-// Validate a single node against a schema object.
-//
-// Schema fields:
-//   tag              string   — required tag name
-//   requiredAttrs    array    — attribute names that must be present
-//   requiredChildren array    — child tag names that must exist
-//   minChildren      number   — minimum child count
-//   maxChildren      number   — maximum child count
-//   requireText      bool     — node must have non-empty text
-//   noText           bool     — node must NOT have text
 fn validateSchema(node, schema) {
   var result = _ok()
 
@@ -72,8 +60,6 @@ fn validateSchema(node, schema) {
   result
 }
 
-// Validate every node in a tree using a map of tag → schema.
-// Tags not present in schemas are skipped.
 fn validateTree(root, schemas) {
   val schema = schemas[root.tag]
   var result = _ok()
@@ -91,7 +77,6 @@ fn validateTree(root, schemas) {
   result
 }
 
-// Check that a node and all descendants have valid (non-empty) tag names.
 fn isWellFormed(node) {
   var result = _ok()
 

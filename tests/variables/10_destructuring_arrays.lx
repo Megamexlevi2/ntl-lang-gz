@@ -1,6 +1,3 @@
-// Lunex — array destructuring
-// Extract elements from arrays into local bindings
-// Lunex v0.8.1 · github.com/Megamexlevi2/lunex-lang-gz
 
 val io = @import("std.io")
 fn getCoords() { [48.8566, 2.3522] }

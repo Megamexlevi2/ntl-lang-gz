@@ -1,6 +1,3 @@
-// Lunex — event loop simulation
-// Process a typed event queue with handlers
-// Lunex v0.8.1 · github.com/Megamexlevi2/lunex-lang-gz
 
 val io = @import("std.io")
 fn EventLoop() {

@@ -1,5 +1,3 @@
-// David Dev — (c) 2026. Licensed under the Mozilla Public License 2.0.
-
 package runtime
 
 import (
@@ -211,7 +209,7 @@ func (interp *Interpreter) evalArray(node *ast.Node, env *Environment) (*Value, 
 			}
 			if suspErr := interp.CheckArraySpread(val, el); suspErr != nil {
 				errfmt.Print(suspErr.(*errfmt.LunexError))
-				// spread produces nothing; continue building the array
+
 				continue
 			}
 			if val.Tag == TypeArray {
@@ -241,7 +239,7 @@ func (interp *Interpreter) evalObject(node *ast.Node, env *Environment) (*Value,
 			}
 			if suspErr := interp.CheckObjectSpread(val, prop.Arg); suspErr != nil {
 				errfmt.Print(suspErr.(*errfmt.LunexError))
-				// spread produces nothing; continue building the object
+
 			} else if val.Tag == TypeObject {
 				for k, v := range val.ObjVal {
 					obj[k] = v
@@ -305,11 +303,11 @@ func (interp *Interpreter) evalRegex(node *ast.Node) (*Value, error) {
 	if strings.Contains(node.Flags, "m") {
 		flags += "(?m)"
 	}
-	// The 's' (dotAll) flag maps to Go's (?s) mode.
+
 	if strings.Contains(node.Flags, "s") {
 		flags += "(?s)"
 	}
-	// 'g' (global) has no Go equivalent; FindAll* methods already return all matches.
+
 	re, err := regexp.Compile(flags + pattern)
 	if err != nil {
 		return Null, nil
@@ -345,8 +343,6 @@ func (interp *Interpreter) evalIdentifier(node *ast.Node, env *Environment) (*Va
 				fmt.Sprintf("did you mean `%s`? (closest match by name)", similar[0]))
 		}
 
-		// Show user-defined names only — filter out well-known built-ins
-		// so the note is actually useful.
 		noisy := map[string]bool{
 			"Error": true, "Infinity": true, "NaN": true, "Math": true,
 			"setInterval": true, "isFinite": true, "Number": true,

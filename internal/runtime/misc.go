@@ -1,5 +1,3 @@
-// David Dev — (c) 2026. Licensed under the Mozilla Public License 2.0.
-
 package runtime
 
 import (
@@ -213,7 +211,7 @@ func (interp *Interpreter) evalMatchExpr(node *ast.Node, env *Environment) (*Val
 			}
 		}
 	}
-	// No arm matched — emit S0002 and return undefined
+
 	if v, suspErr := interp.CheckMatchResult(subject, node); suspErr != nil {
 		errfmt.Print(suspErr.(*errfmt.LunexError))
 		return v, nil

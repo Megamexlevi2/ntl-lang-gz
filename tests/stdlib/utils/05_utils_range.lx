@@ -1,6 +1,3 @@
-// Lunex — utils — range
-// Generate sequential number arrays and chain with native array methods
-// Lunex v0.8.1 · github.com/Megamexlevi2/lunex-lang-gz
 
 val io    = @import("std.io")
 val utils = @import("std.utils")

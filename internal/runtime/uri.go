@@ -1,5 +1,3 @@
-// David Dev — (c) 2026. Licensed under the Mozilla Public License 2.0.
-
 package runtime
 
 import (
@@ -23,7 +21,6 @@ func encodeURIComponent(s string) string {
 	return buf.String()
 }
 
-// encodeURI encodes a full URI, preserving characters that are legal URI syntax.
 func encodeURI(s string) string {
 	var buf strings.Builder
 	for _, r := range s {

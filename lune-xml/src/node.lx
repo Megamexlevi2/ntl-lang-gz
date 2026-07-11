@@ -1,10 +1,3 @@
-// XmlNode — core struct for all XML elements
-// Every node has: tag, attrs, attrOrder, children, text, cdata
-//
-// `attrOrder` tracks the insertion order of attribute names.
-// Lunex object/map iteration order (Object.keys) is randomized per
-// call, so attribute order must be tracked separately to keep
-// build()/buildFragment() output deterministic.
 
 fn XmlNode(tag_, text_) {
   val self = struct {
@@ -15,7 +8,6 @@ fn XmlNode(tag_, text_) {
     text      = text_
     cdata     = false
 
-    // Attribute access
     fn setAttribute(k, v) {
       unless this.attrs[k] != null {
         this.attrOrder.push(k)
@@ -26,26 +18,19 @@ fn XmlNode(tag_, text_) {
     fn hasAttr(k)          { this.attrs[k] != null }
     fn attributeNames()    { this.attrOrder }
 
-    // Children
     fn appendChild(child) { this.children.push(child) }
     fn hasChildren()      { this.children.length > 0 }
     fn childAt(i)         { this.children[i] }
     fn childCount()       { this.children.length }
 
-    // Text
     fn setText(t)  { this.text = t }
     fn getText()   { this.text }
 
-    // CDATA — when true, build()/buildFragment() serialize `text` as
-    // a <![CDATA[ ... ]]> section instead of escaping it. Ignored if
-    // the node has children, or if `text` itself contains "]]>".
     fn setCData(flag) { this.cdata = flag }
     fn isCData()      { this.cdata }
 
-    // Tag
     fn getTag()    { this.tag }
 
-    // Debug
     fn toString()  { `XmlNode<${this.tag}>` }
   }
   self
@@ -59,9 +44,6 @@ fn newTextNode(tag, text) {
   XmlNode(tag, text)
 }
 
-// Create a node whose text content will be serialized as a CDATA
-// section (no entity escaping). Falls back to normal escaped text if
-// `text` contains the "]]>" terminator.
 fn newCDataNode(tag, text) {
   val n = XmlNode(tag, text)
   n.setCData(true)

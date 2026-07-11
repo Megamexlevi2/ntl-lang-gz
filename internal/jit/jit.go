@@ -1,11 +1,3 @@
-// (c) David Dev 2026. Licensed under the Mozilla Public License, Version 2.0.
-
-// Package jit provides the Go-side profiler and pure-Go fast-path
-// implementations of numeric loop patterns recognised by the interpreter.
-//
-// All acceleration is pure Go — no subprocess, no mmap, no native code.
-// The fast paths use O(1) closed-form math formulas (Gauss sum, geometric
-// series, etc.) to skip entire loops with a single arithmetic expression.
 package jit
 
 import (
@@ -20,19 +12,16 @@ import (
 	"time"
 )
 
-// HotThreshold is the call count above which a function is considered hot.
 const HotThreshold int64 = 50
 
-// Execution tier constants.
 const (
-	TierInterpret uint32 = iota // Interpreted by the Go tree-walker.
-	TierFastGo                  // Recognised loop pattern, pure-Go fast path.
-	TierNative                  // Reserved (unused in this build).
+	TierInterpret uint32 = iota
+	TierFastGo
+	TierNative
 )
 
 var tierLabel = [...]string{"interpret", "fast-go", "fast-go"}
 
-// FnProfile holds per-function call statistics collected by the profiler.
 type FnProfile struct {
 	Name    string
 	calls   atomic.Int64
@@ -41,7 +30,6 @@ type FnProfile struct {
 	mu      sync.Mutex
 }
 
-// NewProfile creates a new FnProfile for the named function.
 func NewProfile(name string) *FnProfile {
 	p := &FnProfile{Name: name}
 	p.tier.Store(TierFastGo)
@@ -83,7 +71,6 @@ func (p *FnProfile) PromoteToFastGo() bool              { return p.promoteToTier
 func (p *FnProfile) ShouldSample() bool                 { return p.calls.Load()&31 == 0 }
 func (p *FnProfile) TryLoadFromDiskCache(_ string) bool { return false }
 
-// Profiler tracks per-function call statistics.
 type Profiler struct {
 	profiles sync.Map
 	start    time.Time
@@ -126,7 +113,6 @@ func (p *Profiler) IsHot(name string) bool {
 	return ok
 }
 
-// Report returns a formatted profiling summary table.
 func (p *Profiler) Report() string {
 	var sb strings.Builder
 	elapsed := time.Since(p.start)
@@ -172,68 +158,48 @@ func fnCacheKey(name, sourceText string) string {
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-// ─── Fast-path entry points (called by interpreter) ──────────────────────────
-
-// ExecCountSumNative returns (finalCounter, sum) for integers [start, limit].
-// O(1) via Gauss formula.
 func ExecCountSumNative(start, limit int64) (int64, int64) {
 	return native.RunCountSum(start, limit)
 }
 
-// ExecCountSumExclusive returns (finalCounter, sum) for integers [start, limit).
-// O(1).
 func ExecCountSumExclusive(start, limit int64) (int64, int64) {
 	return native.RunCountSumExclusive(start, limit)
 }
 
-// ExecCountNative counts from start to limit (exclusive) with empty body.
-// O(1).
 func ExecCountNative(start, limit int64) int64 {
 	return native.RunCount(start, limit)
 }
 
-// ExecCountInclusive counts from start through limit (inclusive). O(1).
 func ExecCountInclusive(start, limit int64) int64 {
 	return native.RunCountInclusive(start, limit)
 }
 
-// ExecCountStep counts from start to limitExcl by step with empty body. O(1).
 func ExecCountStep(start, limitExcl, step int64) int64 {
 	return native.RunCountStep(start, limitExcl, step)
 }
 
-// ExecFib advances a Fibonacci sequence (a, b) by count steps. O(n).
 func ExecFib(a, b, count int64) (int64, int64) {
 	return native.RunFib(a, b, count)
 }
 
-// ExecCountAccum counts from start to limit, adding delta to accum each step.
-// O(1) closed form.
 func ExecCountAccum(start, limit, step, accumStart, delta int64) (int64, int64) {
 	return native.RunCountAccum(start, limit, step, accumStart, delta)
 }
 
-// ExecStepAccum counts from start to limitExcl by step, adding delta to accum.
-// O(1) closed form.
 func ExecStepAccum(start, limitExcl, step, accumStart, delta int64) (int64, int64) {
 	return native.RunStepAccum(start, limitExcl, step, accumStart, delta)
 }
 
-// ExecCountAccumMul counts from start to limit, multiplying accum by factor each step.
-// O(1) via integer exponentiation.
 func ExecCountAccumMul(start, limit, step, accumStart, factor int64) (int64, int64) {
 	return native.RunCountAccumMul(start, limit, step, accumStart, factor)
 }
 
-// ExecSumSquares computes sum of squares [start, limit]. O(1).
 func ExecSumSquares(start, limit int64) (int64, int64) {
 	return native.RunSumSquares(start, limit)
 }
 
-// ExecCountMul computes product of integers [start, limit]. O(n).
 func ExecCountMul(start, limit int64) (int64, int64) {
 	return native.RunCountMul(start, limit)
 }
 
-// Ensure fnCacheKey is used (package-level reference).
 var _ = fnCacheKey

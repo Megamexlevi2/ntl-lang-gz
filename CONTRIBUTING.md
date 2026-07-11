@@ -31,7 +31,7 @@ Open an issue with the `enhancement` label. Describe:
 
 ```bash
 git clone https://github.com/Megamexlevi2/lunex-language
-cd lunex-lang-gz
+cd lunex-language
 ```
 
 ### 2. Build
@@ -59,11 +59,11 @@ Key directories:
 | `internal/lexer/` | Tokenizer |
 | `internal/parser/` | AST builder |
 | `internal/runtime/` | Tree-walking interpreter |
-| `internal/bytecode/` | Bytecode compiler and VM |
+| `internal/bytecode/` | Archive compiler and VM |
 | `internal/std/` | Standard library modules |
 | `internal/errfmt/` | Error formatting and error codes |
 | `internal/jit/` | JIT cache and native fast paths |
-| `internal/compiler/` | Source-to-bytecode pipeline |
+| `internal/compiler/` | Source compiler pipeline |
 | `internal/formatter/` | `lunex fmt` pretty-printer |
 | `examples/` | Runnable example programs |
 | `tests/` | Manual test scripts |
@@ -85,7 +85,7 @@ Open a pull request against the `main` branch. Include a short description of wh
 
 ```
 lunex-lang-gz/
-├── main.go                 CLI entry point
+├── cmd/lunex/             CLI entry point
 ├── version.json            Version metadata (embedded at build time)
 ├── build.sh                Build script (local and release)
 ├── build-termux.sh         Build script for Android/Termux
@@ -96,8 +96,8 @@ lunex-lang-gz/
 │   ├── ast/                AST node definitions
 │   ├── lexer/              Tokenizer
 │   ├── parser/             Parser
-│   ├── compiler/           Source-to-bytecode compiler
-│   ├── bytecode/           Bytecode format, VM, cache
+│   ├── compiler/           Source compiler
+│   ├── bytecode/           Archive format, VM, cache
 │   ├── runtime/            Tree-walking interpreter
 │   ├── std/                Standard library (one file per module)
 │   ├── errfmt/             Error codes, formatting, catalog

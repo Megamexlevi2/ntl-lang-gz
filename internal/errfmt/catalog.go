@@ -1,9 +1,5 @@
-// Runtime error catalog — Go side.
-// Runtime error codes used across the Lunex Go runtime.
 package errfmt
 
-// Runtime error codes.
-// 4000s = execution errors, 5000s = JIT, 7000s = I/O
 const (
 	ENullDeref      uint16 = 4001
 	EDivZero        uint16 = 4002
@@ -50,10 +46,9 @@ var catalog = map[uint16]entry{
 	EJITCodegen:     {"JIT: code generation failed. Falling back to interpreter."},
 	EIORead:         {"Read error. Check path, permissions, and disk space."},
 	EIOWrite:        {"Write error. Check disk space and permissions."},
-	EBadBCFormat:    {"Not a valid .nc file. Use 'lunex build' to produce one."},
+	EBadBCFormat:    {"Not a valid .nax file. Use 'lunex build' to produce one."},
 }
 
-// Lookup returns the hint note for an error code, or empty string.
 func Lookup(code uint16) string {
 	if e, ok := catalog[code]; ok {
 		return e.note

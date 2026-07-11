@@ -13,7 +13,6 @@ fn _isProgramName(token) {
   token == _name ||
   token == "lunex" ||
   token.endsWith(".lx") ||
-  token.endsWith(".nc") ||
   token.endsWith(".nax") ||
   token.includes("/") ||
   token.includes("\\")

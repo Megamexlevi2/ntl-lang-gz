@@ -1,5 +1,3 @@
-//Removed because the zig runtime was removed
-
 package bytecode
 
 import (
@@ -10,12 +8,8 @@ import (
 	"math"
 )
 
-// ErrNTZUnsupported is returned when the source contains features the
-// NTZ compiler cannot handle. The caller should omit the NTZ section
-// and let Go's interpreter handle the program.
 var ErrNTZUnsupported = fmt.Errorf("lunex: feature not supported by NTZ compiler")
 
-// NTZ opcode values — Lunex bytecode instruction set.
 const (
 	ntzConst       = 0
 	ntzLoad        = 1
@@ -60,11 +54,10 @@ const (
 	ntzTry         = 40
 	ntzCatch       = 41
 	ntzHalt        = 42
-	ntzPop         = 43 // Pop top of stack
-	ntzFuncDef     = 44 // Define a function and push it as a closure value
+	ntzPop         = 43
+	ntzFuncDef     = 44
 )
 
-// Const-kind tags (sub-byte after Const opcode).
 const (
 	ntzConstNull   = 0
 	ntzConstBool   = 1
@@ -73,30 +66,20 @@ const (
 	ntzConstString = 4
 )
 
-// patchSite records the byte offset of a 4-byte jump target that
-// must be backpatched once the real destination address is known.
 type patchSite struct{ offset int }
 
-// loopCtx tracks information needed to resolve break/continue inside loops.
 type loopCtx struct {
-	continueTarget int   // bytecode offset to jump to on continue
-	breakSites     []int // byte offsets of break-jump targets to patch
+	continueTarget int
+	breakSites     []int
 }
 
-// ntzC is the NTZ bytecode compiler state.
 type ntzC struct {
 	buf      bytes.Buffer
-	vars     map[string]uint16 // variable name → stack slot index
+	vars     map[string]uint16
 	nextSlot uint16
 	loops    []loopCtx
 }
 
-// CompileNTZ walks a parsed Lunex AST and emits NTZ bytecode.
-// Returns ErrNTZUnsupported if any feature cannot be compiled.
-//
-// After all top-level statements are compiled, if a function named "main" was
-// defined the compiler appends a Load+Call+Pop so the runtime automatically
-// invokes it — mirroring what the Go interpreter does via CallMain().
 func CompileNTZ(tree *ast.Node) ([]byte, error) {
 	if tree == nil {
 		return []byte{ntzHalt}, nil
@@ -106,22 +89,17 @@ func CompileNTZ(tree *ast.Node) ([]byte, error) {
 		return nil, err
 	}
 
-	// Auto-invoke main() if it was defined at top level.
-	// The Go interpreter always calls CallMain() after executing the
-	// program body; the NTZ VM must do the same or main() is never run.
 	if slot, hasMain := c.vars["main"]; hasMain {
 		c.emitU8(ntzLoad)
 		c.emitU16(slot)
 		c.emitU8(ntzCall)
-		c.emitU8(0) // 0 arguments
+		c.emitU8(0)
 		c.emitU8(ntzPop)
 	}
 
 	c.emit(ntzHalt)
 	return c.buf.Bytes(), nil
 }
-
-// ─── emit helpers ─────────────────────────────────────────────────────────────
 
 func (c *ntzC) emit(b ...byte) { c.buf.Write(b) }
 
@@ -156,7 +134,7 @@ func (c *ntzC) pos() int { return c.buf.Len() }
 func (c *ntzC) emitJump(op byte) patchSite {
 	c.emitU8(op)
 	pt := patchSite{offset: c.buf.Len()}
-	c.emitU32(0) // placeholder — patched later
+	c.emitU32(0)
 	return pt
 }
 
@@ -182,8 +160,6 @@ func (c *ntzC) emitName(name string) {
 	c.emitU8(uint8(len(name)))
 	c.buf.WriteString(name)
 }
-
-// ─── statement compilation ────────────────────────────────────────────────────
 
 func (c *ntzC) stmt(n *ast.Node) error {
 	if n == nil {
@@ -216,7 +192,7 @@ func (c *ntzC) stmt(n *ast.Node) error {
 		slot := c.varSlot(n.Name)
 		c.emitU8(ntzStore)
 		c.emitU16(slot)
-		c.emitU8(ntzPop) // discard leftover value from Store (peek semantics)
+		c.emitU8(ntzPop)
 
 	case ast.ExprStmt:
 		if n.Expr != nil {
@@ -291,7 +267,7 @@ func (c *ntzC) stmt(n *ast.Node) error {
 		c.emitU32(uint32(target))
 
 	case ast.AssertStmt:
-		// assert expr → if !expr throw "assertion failed"
+
 		if n.Expr != nil {
 			if err := c.expr(n.Expr); err != nil {
 				return err
@@ -301,7 +277,7 @@ func (c *ntzC) stmt(n *ast.Node) error {
 			c.emitU8(ntzConstBool)
 			c.emitU8(1)
 		}
-		jmp := c.emitJump(ntzJumpIf) // skip throw if true
+		jmp := c.emitJump(ntzJumpIf)
 		c.emitU8(ntzConst)
 		c.emitU8(ntzConstString)
 		msg := "assertion failed"
@@ -326,7 +302,6 @@ func (c *ntzC) stmt(n *ast.Node) error {
 	case ast.ForOfStmt, ast.EachInStmt:
 		return c.compileForOf(n)
 
-	// Unsupported statements → fall back to Go interpreter
 	case ast.ClassDecl, ast.EnumDecl, ast.NamespaceDecl,
 		ast.ComponentDecl, ast.ImportDecl, ast.ExportDecl, ast.LunexRequire,
 		ast.UseStmt, ast.TryStmt, ast.SpawnStmt, ast.SelectStmt,
@@ -336,7 +311,7 @@ func (c *ntzC) stmt(n *ast.Node) error {
 		return ErrNTZUnsupported
 
 	default:
-		// Unknown statement — attempt as expression (e.g. FnExpr at top level)
+
 		if err := c.expr(n); err != nil {
 			return err
 		}
@@ -353,7 +328,7 @@ func (c *ntzC) compileIf(n *ast.Node) error {
 	if err := c.expr(cond); err != nil {
 		return err
 	}
-	// UnlessStmt → negate condition
+
 	if n.Type == ast.UnlessStmt {
 		c.emitU8(ntzNot)
 	}
@@ -392,8 +367,7 @@ func (c *ntzC) compileWhile(n *ast.Node) error {
 }
 
 func (c *ntzC) compileFor(n *ast.Node) error {
-	// for (Init; Test; Update) Body
-	// Init is a statement node (VarDecl or ExprStmt)
+
 	if n.Init != nil {
 		if err := c.stmt(n.Init); err != nil {
 			return err
@@ -412,7 +386,7 @@ func (c *ntzC) compileFor(n *ast.Node) error {
 	if err := c.stmt(n.Body); err != nil {
 		return err
 	}
-	// Update expression (stored in node.Right for ForStmt)
+
 	if n.Right != nil {
 		if err := c.expr(n.Right); err != nil {
 			return err
@@ -438,8 +412,6 @@ func (c *ntzC) patchBreaks() {
 	}
 	c.loops = c.loops[:len(c.loops)-1]
 }
-
-// ─── expression compilation ───────────────────────────────────────────────────
 
 func (c *ntzC) expr(n *ast.Node) error {
 	if n == nil {
@@ -480,8 +452,7 @@ func (c *ntzC) expr(n *ast.Node) error {
 			c.emitU8(ntzLoad)
 			c.emitU16(slot)
 		} else {
-			// Identifier not declared as local — treat as uninitialized (null)
-			// This handles cases where variables may have been declared elsewhere
+
 			slot = c.varSlot(name)
 			c.emitU8(ntzLoad)
 			c.emitU16(slot)
@@ -537,7 +508,7 @@ func (c *ntzC) expr(n *ast.Node) error {
 		c.emitU8(ntzConstNull)
 
 	case ast.TypeofExpr:
-		// typeof expr → CallRT "typeof" 1
+
 		if err := c.expr(n.Expr); err != nil {
 			return err
 		}
@@ -551,7 +522,6 @@ func (c *ntzC) expr(n *ast.Node) error {
 	case ast.AtImportExpr:
 		return c.compileAtImport(n)
 
-	// Unsupported expressions → fall back to Go interpreter
 	case ast.NewExpr, ast.TemplateLit,
 		ast.PipelineExpr, ast.SequenceExpr, ast.HaveExpr,
 		ast.TrySafeExpr, ast.RangeExpr, ast.SleepExpr,
@@ -577,7 +547,7 @@ func (c *ntzC) emitNumber(v interface{}) error {
 		c.emitU8(ntzConstInt)
 		c.emitI64(int64(val))
 	case float64:
-		// Emit as integer if it's a whole number in range
+
 		if val == math.Trunc(val) && val >= -9e15 && val <= 9e15 {
 			c.emitU8(ntzConst)
 			c.emitU8(ntzConstInt)
@@ -657,7 +627,7 @@ func (c *ntzC) compileUnary(n *ast.Node) error {
 	case "~":
 		c.emitU8(ntzBitNot)
 	case "+":
-		// unary + is a no-op for numbers
+
 	default:
 		return fmt.Errorf("lunex/ntz: unsupported unary op %q", n.Op)
 	}
@@ -667,12 +637,11 @@ func (c *ntzC) compileUnary(n *ast.Node) error {
 func (c *ntzC) compileLogical(n *ast.Node) error {
 	switch n.Op {
 	case "&&":
-		// Short-circuit AND: if left is falsy, return left; else evaluate right
+
 		if err := c.expr(n.Left); err != nil {
 			return err
 		}
-		// Duplicate top for the short-circuit check
-		// Save to temp slot, load it, jump if false
+
 		temp := c.nextSlot
 		c.nextSlot++
 		c.emitU8(ntzStore)
@@ -680,17 +649,17 @@ func (c *ntzC) compileLogical(n *ast.Node) error {
 		c.emitU8(ntzLoad)
 		c.emitU16(temp)
 		jmpFalse := c.emitJump(ntzJumpIfFalse)
-		c.emitU8(ntzPop) // discard the duplicated left
+		c.emitU8(ntzPop)
 		if err := c.expr(n.Right); err != nil {
 			return err
 		}
 		jmpEnd := c.emitJump(ntzJump)
 		c.patch(jmpFalse, c.pos())
-		// left value is already on stack (we loaded it from temp)
+
 		c.patch(jmpEnd, c.pos())
 
 	case "||":
-		// Short-circuit OR: if left is truthy, return left; else evaluate right
+
 		if err := c.expr(n.Left); err != nil {
 			return err
 		}
@@ -701,7 +670,7 @@ func (c *ntzC) compileLogical(n *ast.Node) error {
 		c.emitU8(ntzLoad)
 		c.emitU16(temp)
 		jmpTrue := c.emitJump(ntzJumpIf)
-		c.emitU8(ntzPop) // discard duplicated left
+		c.emitU8(ntzPop)
 		if err := c.expr(n.Right); err != nil {
 			return err
 		}
@@ -727,7 +696,7 @@ func (c *ntzC) compileAssign(n *ast.Node) error {
 				return err
 			}
 		} else {
-			// Compound: load, compile RHS, apply op
+
 			c.emitU8(ntzLoad)
 			c.emitU16(slot)
 			if err := c.expr(n.Right); err != nil {
@@ -739,11 +708,10 @@ func (c *ntzC) compileAssign(n *ast.Node) error {
 		}
 		c.emitU8(ntzStore)
 		c.emitU16(slot)
-		// Store is peek — value remains on stack as the expression result
 
 	case ast.MemberExpr:
 		if target.Computed {
-			// arr[idx] = val
+
 			if op != "=" {
 				return ErrNTZUnsupported
 			}
@@ -757,9 +725,9 @@ func (c *ntzC) compileAssign(n *ast.Node) error {
 				return err
 			}
 			c.emitU8(ntzSetIndex)
-			// Stack: obj still on top (SetIndex peeks obj)
+
 		} else {
-			// obj.field = val
+
 			if op != "=" {
 				return ErrNTZUnsupported
 			}
@@ -773,10 +741,9 @@ func (c *ntzC) compileAssign(n *ast.Node) error {
 			c.emitU8(ntzSetField)
 			c.emitU8(uint8(len(name)))
 			c.buf.WriteString(name)
-			// Stack: obj still on top (SetField peeks obj)
+
 		}
-		// Push the assigned value as the expression result
-		// (we don't have easy access to it after SetField/SetIndex)
+
 		c.emitU8(ntzConst)
 		c.emitU8(ntzConstNull)
 
@@ -819,11 +786,10 @@ func (c *ntzC) compileCall(n *ast.Node) error {
 		return ErrNTZUnsupported
 	}
 
-	// Direct identifier call: name(args)
 	if n.Callee.Type == ast.Identifier {
 		name := n.Callee.Name
 		if _, isLocal := c.vars[name]; isLocal {
-			// User-defined local function: push callee, then args, then Call
+
 			slot := c.vars[name]
 			c.emitU8(ntzLoad)
 			c.emitU16(slot)
@@ -836,7 +802,7 @@ func (c *ntzC) compileCall(n *ast.Node) error {
 			c.emitU8(uint8(len(n.Args)))
 			return nil
 		}
-		// Global / builtin: push args, then CallRT
+
 		for _, arg := range n.Args {
 			if err := c.expr(arg); err != nil {
 				return err
@@ -849,15 +815,13 @@ func (c *ntzC) compileCall(n *ast.Node) error {
 		return nil
 	}
 
-	// Method call: obj.method(args) → push args, CallRT "method" N
-	// We redirect method calls to the global built-in of the same name.
 	if n.Callee.Type == ast.MemberExpr {
 		callee := n.Callee
 		method := c.fieldName(callee)
 		if method == "" {
 			return ErrNTZUnsupported
 		}
-		// Push the object as the first implicit argument
+
 		if err := c.expr(callee.Object); err != nil {
 			return err
 		}
@@ -869,7 +833,7 @@ func (c *ntzC) compileCall(n *ast.Node) error {
 		c.emitU8(ntzCallRT)
 		c.emitU8(uint8(len(method)))
 		c.buf.WriteString(method)
-		c.emitU8(uint8(1 + len(n.Args))) // object + args
+		c.emitU8(uint8(1 + len(n.Args)))
 		return nil
 	}
 
@@ -907,7 +871,7 @@ func (c *ntzC) compileIndex(prop interface{}) error {
 
 func (c *ntzC) compileObject(n *ast.Node) error {
 	for _, prop := range n.Properties {
-		// Key
+
 		key := ""
 		switch k := prop.Key.(type) {
 		case string:
@@ -928,7 +892,7 @@ func (c *ntzC) compileObject(n *ast.Node) error {
 		c.emitU8(ntzConstString)
 		c.emitU32(uint32(len(key)))
 		c.buf.WriteString(key)
-		// Value (including function expressions as property values)
+
 		if prop.Value != nil {
 			if err := c.expr(prop.Value); err != nil {
 				return err
@@ -960,7 +924,6 @@ func (c *ntzC) compileTernary(n *ast.Node) error {
 	return nil
 }
 
-// fieldName extracts the field name string from a MemberExpr node.
 func (c *ntzC) fieldName(n *ast.Node) string {
 	if n.Prop == nil {
 		return ""
@@ -984,22 +947,17 @@ func (c *ntzC) fieldName(n *ast.Node) string {
 	return ""
 }
 
-// compileFn compiles a function declaration or expression into a FuncDef opcode.
-// The closure value is left on top of the stack.
 func (c *ntzC) compileFn(n *ast.Node) error {
 	name := n.Name
 
-	// Build a child compiler for the function body.
 	child := &ntzC{vars: make(map[string]uint16)}
 
-	// Register parameters as local slots 0..N-1.
 	for _, p := range n.Params {
 		if p != nil && p.Name != "" {
 			child.varSlot(p.Name)
 		}
 	}
 
-	// Compile the body.
 	body := n.Body
 	if body == nil && len(n.Body_) > 0 {
 		for _, s := range n.Body_ {
@@ -1013,14 +971,12 @@ func (c *ntzC) compileFn(n *ast.Node) error {
 		}
 	}
 
-	// Implicit null return at end.
 	child.emitU8(ntzConst)
 	child.emitU8(ntzConstNull)
 	child.emitU8(ntzReturn)
 
 	bodyBytes := child.buf.Bytes()
 
-	// Emit FuncDef: opcode | param_count(u8) | name_len(u8) | name | body_len(u32) | body
 	if len(name) > 255 {
 		name = name[:255]
 	}
@@ -1033,9 +989,8 @@ func (c *ntzC) compileFn(n *ast.Node) error {
 	return nil
 }
 
-// compileForOf compiles `for val x of arr` and `each x in arr` loop statements.
 func (c *ntzC) compileForOf(n *ast.Node) error {
-	// Determine the binding variable name.
+
 	varName := n.Binding
 	if varName == "" {
 		varName = n.BindingName
@@ -1047,7 +1002,6 @@ func (c *ntzC) compileForOf(n *ast.Node) error {
 		return ErrNTZUnsupported
 	}
 
-	// Determine the iterable expression.
 	iterExpr := n.Right
 	if iterExpr == nil {
 		iterExpr = n.Init
@@ -1056,7 +1010,6 @@ func (c *ntzC) compileForOf(n *ast.Node) error {
 		return ErrNTZUnsupported
 	}
 
-	// Evaluate iterable → store in temp slot.
 	if err := c.expr(iterExpr); err != nil {
 		return err
 	}
@@ -1066,7 +1019,6 @@ func (c *ntzC) compileForOf(n *ast.Node) error {
 	c.emitU16(iterSlot)
 	c.emitU8(ntzPop)
 
-	// Initialize index = 0 → store in temp slot.
 	c.emitU8(ntzConst)
 	c.emitU8(ntzConstInt)
 	c.emitI64(0)
@@ -1076,10 +1028,8 @@ func (c *ntzC) compileForOf(n *ast.Node) error {
 	c.emitU16(idxSlot)
 	c.emitU8(ntzPop)
 
-	// Ensure binding variable has a slot.
 	elemSlot := c.varSlot(varName)
 
-	// Loop start: check idx >= arr.length → exit.
 	loopStart := c.pos()
 	c.emitU8(ntzLoad)
 	c.emitU16(idxSlot)
@@ -1091,7 +1041,6 @@ func (c *ntzC) compileForOf(n *ast.Node) error {
 	c.emitU8(ntzGte)
 	jmpEnd := c.emitJump(ntzJumpIf)
 
-	// elem = arr[idx]
 	c.emitU8(ntzLoad)
 	c.emitU16(iterSlot)
 	c.emitU8(ntzLoad)
@@ -1101,17 +1050,14 @@ func (c *ntzC) compileForOf(n *ast.Node) error {
 	c.emitU16(elemSlot)
 	c.emitU8(ntzPop)
 
-	// Push loop context (continue → loop start re-checks condition).
 	c.loops = append(c.loops, loopCtx{continueTarget: loopStart})
 
-	// Compile loop body.
 	if n.Body != nil {
 		if err := c.stmt(n.Body); err != nil {
 			return err
 		}
 	}
 
-	// Increment: idx = idx + 1
 	c.emitU8(ntzLoad)
 	c.emitU16(idxSlot)
 	c.emitU8(ntzConst)
@@ -1122,20 +1068,14 @@ func (c *ntzC) compileForOf(n *ast.Node) error {
 	c.emitU16(idxSlot)
 	c.emitU8(ntzPop)
 
-	// Jump back to loop start.
 	c.emitU8(ntzJump)
 	c.emitU32(uint32(loopStart))
 
-	// Patch the exit jump and clean up.
 	c.patch(jmpEnd, c.pos())
 	c.patchBreaks()
 	return nil
 }
 
-// stdlibModules maps @import paths to their exported methods.
-// Each method entry is a (global-builtin-name, param-count) pair.
-// The NTZ compiler emits a MakeObject with wrapper closures that
-// call the corresponding global builtin.
 var stdlibModules = map[string][]struct {
 	name   string
 	params []string
@@ -1226,34 +1166,26 @@ var stdlibModules = map[string][]struct {
 	},
 }
 
-// compileAtImport compiles @import("mod.name") → a MakeObject whose methods
-// are wrapper closures that delegate to global builtins.
-// This allows programs that use standard library imports to run entirely
-// without falling back to the interpreter.
 func (c *ntzC) compileAtImport(n *ast.Node) error {
 	modPath := n.Source
 	methods, known := stdlibModules[modPath]
 	if !known {
-		// Unknown module — emit an empty object so the program doesn't crash.
-		// The variable will be null-like but at least won't abort NTZ compilation.
+
 		c.emitU8(ntzMakeObject)
 		c.emitU16(0)
 		return nil
 	}
 
-	// For each method, emit a string key + closure value.
-	// The closure wraps a CallRT to the same-named global builtin.
 	propCount := 0
 	for _, m := range methods {
 		if m.params == nil {
-			// Constant value (e.g. math.PI, math.E) — emit as a constant.
+
 			key := m.name
 			c.emitU8(ntzConst)
 			c.emitU8(ntzConstString)
 			c.emitU32(uint32(len(key)))
 			c.buf.WriteString(key)
 
-			// Emit the constant value for well-known math constants.
 			switch key {
 			case "PI":
 				c.emitU8(ntzConst)
@@ -1277,18 +1209,13 @@ func (c *ntzC) compileAtImport(n *ast.Node) error {
 		c.emitU32(uint32(len(key)))
 		c.buf.WriteString(key)
 
-		// Build a wrapper closure:
-		//   fn(...params) { return CallRT(builtinName, params...) }
-		// The builtin name is the module-prefixed version,
-		// e.g. std.io.log → "stdioLog", or just the bare name if
-		// the global already exists (log, sleep, now, etc.).
 		builtinName := moduleBuiltinName(modPath, m.name)
 		child := &ntzC{vars: make(map[string]uint16)}
-		// Register params as locals.
+
 		for _, p := range m.params {
 			child.varSlot(p)
 		}
-		// Body: push each param, CallRT builtinName, return result.
+
 		for _, p := range m.params {
 			slot := child.vars[p]
 			child.emitU8(ntzLoad)
@@ -1320,11 +1247,8 @@ func (c *ntzC) compileAtImport(n *ast.Node) error {
 	return nil
 }
 
-// moduleBuiltinName returns the global builtin name for a module method.
-// For methods that already exist as globals (log, sleep, etc.) we return them directly.
-// For others we return a module-namespaced name (e.g. "utils_now").
 func moduleBuiltinName(mod, method string) string {
-	// Global builtins that exist in all contexts.
+
 	globals := map[string]bool{
 		"log": true, "sleep": true,
 		"keys": true, "values": true, "entries": true,
@@ -1343,7 +1267,7 @@ func moduleBuiltinName(mod, method string) string {
 	if globals[method] {
 		return method
 	}
-	// Module-namespaced builtin.
+
 	prefix := ""
 	switch mod {
 	case "std.utils":

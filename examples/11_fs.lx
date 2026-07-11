@@ -1,35 +1,28 @@
-// Example 11 — File system module
 val io = @import("std.io")
 val fs = @import("std.fs")
 
 fn main() {
   val path = "/tmp/lunex_demo.txt"
 
-  // Write a file
   fs.writeFile(path, "Hello from Lunex!\nLine 2\nLine 3")
   io.log("Wrote:", path)
 
-  // Read the whole file
   val content = fs.readFile(path)
   io.log("Content:", content)
 
-  // Read as array of lines
   val lines = fs.readLines(path)
   io.log("Lines:", lines.length, "total")
   each line in lines {
     io.log(" |", line)
   }
 
-  // Stat
   val info = fs.stat(path)
   io.log("Size:", info.size, "bytes")
 
-  // Append
   fs.appendFile(path, "\nLine 4\nLine 5")
   val updated = fs.readLines(path)
   io.log("After append:", updated.length, "lines")
 
-  // Cleanup
   fs.delete(path)
   io.log("Deleted:", path)
   io.success("File system demo complete")

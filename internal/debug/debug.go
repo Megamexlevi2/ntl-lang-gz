@@ -1,28 +1,3 @@
-// Lunex lang — structured diagnostic output for the toolchain.
-//
-// Everything in this package goes to stderr so it never pollutes program output.
-//
-// How to enable:
-//
-//   lunex --debug run test.lx            — standard debug (every execution step)
-//   lunex -d run test.lx                 — short form of --debug
-//   LUNEX_DEBUG=1 ./lunex run test.lx    — same via environment variable
-//   lunex --verbose run test.lx          — verbose mode (even more detail)
-//   LUNEX_VERBOSE=1 ./lunex run test.lx  — verbose via environment variable
-//
-// What you see in debug mode:
-//
-//   - Exactly where the file came from and how big it is
-//   - Whether the cache was hit or missed
-//   - How long each compile phase took
-//   - How many bytes of bytecode Go produced
-//   - Fast-Go path activations for recognized hot loop patterns
-//   - Memory allocation totals and GC count at the end
-//
-// Architecture note:
-//   Go interpreter handles ALL Lunex execution.
-//   Pure-Go fast paths accelerate recognized numeric loop patterns.
-
 package debug
 
 import (
@@ -61,8 +36,6 @@ func EnableVerbose() {
 	_ = os.Setenv("LUNEX_VERBOSE", "1")
 }
 
-// ─── ANSI colour codes ────────────────────────────────────────────────────────
-
 const (
 	cReset  = "\x1b[0m"
 	cBold   = "\x1b[1m"
@@ -78,15 +51,11 @@ const (
 
 func stamp() string { return time.Now().Format("15:04:05.000") }
 
-// ─── Timer ────────────────────────────────────────────────────────────────────
-
-// Timer measures elapsed time for a labelled operation.
 type Timer struct {
 	label string
 	start time.Time
 }
 
-// Start begins a named timer and logs that it started (debug mode only).
 func Start(label string) *Timer {
 	if enabled {
 		fmt.Fprintf(os.Stderr, "%s  [dbg] %-28s %sstarted%s\n", cDim, label, cCyan, cReset)
@@ -94,7 +63,6 @@ func Start(label string) *Timer {
 	return &Timer{label: label, start: time.Now()}
 }
 
-// Done stops the timer, logs the elapsed time, and returns it.
 func (t *Timer) Done() time.Duration {
 	d := time.Since(t.start)
 	if enabled {
@@ -103,9 +71,6 @@ func (t *Timer) Done() time.Duration {
 	return d
 }
 
-// ─── Basic log functions ──────────────────────────────────────────────────────
-
-// Log writes a timestamped message to stderr (debug mode only).
 func Log(format string, args ...any) {
 	if !enabled {
 		return
@@ -114,7 +79,6 @@ func Log(format string, args ...any) {
 		cDim, cCyan, stamp(), cReset+fmt.Sprintf(format, args...), cReset)
 }
 
-// Section prints a separator with a title — use this to mark major phases.
 func Section(title string) {
 	if !enabled {
 		return
@@ -122,9 +86,6 @@ func Section(title string) {
 	fmt.Fprintf(os.Stderr, "%s  -- %s%s%s\n", cDim, cWhite, title, cReset)
 }
 
-// ─── Header / Footer ─────────────────────────────────────────────────────────
-
-// Header prints the debug banner at the start of a run.
 func Header(file string) {
 	if !enabled {
 		return
@@ -145,7 +106,6 @@ func Header(file string) {
 	fmt.Fprintf(os.Stderr, "%s  ----------------------------------------%s\n", cDim, cReset)
 }
 
-// Footer prints a summary at the end of a run.
 func Footer(total time.Duration) {
 	if !enabled {
 		return
@@ -156,9 +116,6 @@ func Footer(total time.Duration) {
 	fmt.Fprintf(os.Stderr, "\n")
 }
 
-// ─── Pipeline steps ───────────────────────────────────────────────────────────
-
-// Step prints a single execution step (what we are about to do).
 func Step(label, detail string) {
 	if !enabled {
 		return
@@ -170,7 +127,6 @@ func Step(label, detail string) {
 	}
 }
 
-// StepOK logs a successful step outcome.
 func StepOK(tag, label, detail string) {
 	if !enabled {
 		return
@@ -182,7 +138,6 @@ func StepOK(tag, label, detail string) {
 	}
 }
 
-// StepWarn logs a step that completed with a non-fatal warning.
 func StepWarn(label, detail string) {
 	if !enabled {
 		return
@@ -190,15 +145,12 @@ func StepWarn(label, detail string) {
 	fmt.Fprintf(os.Stderr, "%s  %s!%s   %-31s%s%s%s\n", cDim, cYellow, cReset, label, cDim, detail, cReset)
 }
 
-// StepFail logs a step that failed.
 func StepFail(label, detail string) {
 	if !enabled {
 		return
 	}
 	fmt.Fprintf(os.Stderr, "%s  %s✗%s   %-31s%s%s%s\n", cDim, cRed, cReset, label, cDim, detail, cReset)
 }
-
-// ─── JIT diagnostics (no-op stubs kept for API compat) ───────────────────────
 
 func BridgeSend(_ string, _ uint16, _ int)          {}
 func BridgeRecv(_ string, _ uint16, _ uint8, _ int) {}
@@ -209,12 +161,11 @@ func BridgeRuntimeStarted(_ string)                 {}
 func BridgeRuntimeFallback(_ string)                {}
 func BridgeRuntimeSuccess(_ int, _ time.Duration)   {}
 
-// BytecodeSection logs details about the bytecode container Go produced.
 func BytecodeSection(totalBytes, ntzBytes int, hasNTZ bool) {
 	if !enabled {
 		return
 	}
-	fmt.Fprintf(os.Stderr, "%s  %s[bc]%s  Go produced .nc container: %d bytes%s\n",
+	fmt.Fprintf(os.Stderr, "%s  %s[bc]%s  Go produced .nax container: %d bytes%s\n",
 		cDim, cYellow, cReset, totalBytes, cReset)
 	if hasNTZ && ntzBytes > 0 {
 		fmt.Fprintf(os.Stderr, "%s         ├─ NTZ section: %d bytes%s\n", cDim, ntzBytes, cReset)
@@ -225,7 +176,6 @@ func BytecodeSection(totalBytes, ntzBytes int, hasNTZ bool) {
 		cDim, cReset)
 }
 
-// BytecodeJITHit logs that the fast-Go JIT compiled a hot function.
 func BytecodeJITHit(fnName string, codeBytes int, report string) {
 	if !enabled {
 		return
@@ -235,9 +185,6 @@ func BytecodeJITHit(fnName string, codeBytes int, report string) {
 		cDim, cGreen, cReset, cCyan, fnName, cReset, codeBytes, cDim, report, cReset)
 }
 
-// ─── Memory ───────────────────────────────────────────────────────────────────
-
-// MemStats prints current heap allocation and GC stats.
 func MemStats() {
 	if !enabled {
 		return
@@ -250,9 +197,6 @@ func MemStats() {
 	)
 }
 
-// ─── Verbose helpers ──────────────────────────────────────────────────────────
-
-// V writes a verbose-only timestamped message.
 func V(format string, args ...any) {
 	if !verbose {
 		return
@@ -260,7 +204,6 @@ func V(format string, args ...any) {
 	fmt.Fprintf(os.Stderr, "%s%s%s  %s\n", cDim, stamp(), cReset, fmt.Sprintf(format, args...))
 }
 
-// VSection prints a verbose section heading.
 func VSection(title string) {
 	if !verbose {
 		return
@@ -268,7 +211,6 @@ func VSection(title string) {
 	fmt.Fprintf(os.Stderr, "\n%s%s%s\n", cCyan, title, cReset)
 }
 
-// VStep prints a verbose step detail.
 func VStep(label string, args ...any) {
 	if !verbose {
 		return
@@ -284,7 +226,6 @@ func VStep(label string, args ...any) {
 	fmt.Fprintf(os.Stderr, "  %s>%s  %s%s\n", cCyan, cReset, label, suffix)
 }
 
-// VKV prints a verbose key-value pair.
 func VKV(key string, val any) {
 	if !verbose {
 		return
@@ -292,7 +233,6 @@ func VKV(key string, val any) {
 	fmt.Fprintf(os.Stderr, "  %s.%s  %-24s  %s%v%s\n", cDim, cReset, key, cWhite, val, cReset)
 }
 
-// VHeader prints the verbose startup banner.
 func VHeader(file string) {
 	if !verbose {
 		return
@@ -304,7 +244,6 @@ func VHeader(file string) {
 	fmt.Fprintf(os.Stderr, "  os/arch  %s/%s%s\n\n", runtime.GOOS, runtime.GOARCH, cReset)
 }
 
-// VFooter prints the verbose completion summary.
 func VFooter(total time.Duration) {
 	if !verbose {
 		return
@@ -315,9 +254,6 @@ func VFooter(total time.Duration) {
 	fmt.Fprintf(os.Stderr, "%s  memory   %s%d KB%s   gc %s%d%s\n\n", cDim, cCyan, m.Alloc/1024, cDim, cCyan, m.NumGC, cReset)
 }
 
-// ─── Command stubs ────────────────────────────────────────────────────────────
-
-// CommandStub is called from command handlers that are not yet fully implemented.
 func CommandStub(cmd, description string) bool {
 	if !enabled {
 		return false
@@ -330,7 +266,6 @@ func CommandStub(cmd, description string) bool {
 	return true
 }
 
-// CommandDebugHeader prints a banner when a command starts in debug mode.
 func CommandDebugHeader(cmd string, args []string) {
 	if !enabled {
 		return

@@ -1,15 +1,3 @@
-// Lunex lang — Suspicious Pattern Detector
-//
-// suspect.go detects runtime patterns that are legal Lunex but almost certainly
-// wrong: for-of on a non-iterable, match with no arm matched, arithmetic that
-// silently produces NaN, out-of-bounds array access, spreading null/undefined
-// or non-iterable values, and calling a function whose return value is undefined.
-//
-// Every detection emits a full LunexError through the standard errfmt pipeline
-// (same format as all other Lunex errors), then returns Undefined so execution
-// continues.  This gives the programmer a precise, actionable error message
-// without a hard crash.
-
 package runtime
 
 import (
@@ -19,11 +7,6 @@ import (
 	"math"
 )
 
-// ── helpers ──────────────────────────────────────────────────────────────────
-
-// suspectError builds a LunexError tagged KindSuspect.
-// It prints to stderr immediately (same as all other runtime errors would be
-// printed by the caller) and returns Undefined so callers can `return` directly.
 func (interp *Interpreter) suspectError(
 	code, msg string,
 	node *ast.Node,
@@ -55,15 +38,10 @@ func (interp *Interpreter) suspectError(
 	return e
 }
 
-// ── S0001 — for-of over non-iterable ─────────────────────────────────────────
-
-// CheckForOfIterable is called by execForOf before the loop begins.
-// If `val` is not an array, string, or object it emits S0001 and returns
-// (Undefined, error) so the caller can bail out early.
 func (interp *Interpreter) CheckForOfIterable(val *Value, node *ast.Node) (*Value, error) {
 	switch val.Tag {
 	case TypeArray, TypeString, TypeObject:
-		return nil, nil // ok
+		return nil, nil
 	}
 
 	typeName := val.TypeName()
@@ -71,7 +49,7 @@ func (interp *Interpreter) CheckForOfIterable(val *Value, node *ast.Node) (*Valu
 	if node != nil && node.Name != "" {
 		iterName = " `" + node.Name + "`"
 	}
-	// Provide extra context for the most common mistakes.
+
 	note := fmt.Sprintf("value of type `%s` is not iterable", typeName)
 	var hint string
 	switch val.Tag {
@@ -97,10 +75,6 @@ func (interp *Interpreter) CheckForOfIterable(val *Value, node *ast.Node) (*Valu
 	return Undefined, e
 }
 
-// ── S0002 — match expression produced no result ───────────────────────────────
-
-// CheckMatchResult is called by evalMatchExpr when no arm matched.
-// It emits S0002, prints the diagnostic, and returns Undefined.
 func (interp *Interpreter) CheckMatchResult(subject *Value, node *ast.Node) (*Value, error) {
 	subjectStr := subject.ToString()
 	if len(subjectStr) > 40 {
@@ -114,18 +88,14 @@ func (interp *Interpreter) CheckMatchResult(subject *Value, node *ast.Node) (*Va
 		fmt.Sprintf("subject type is `%s`", subject.TypeName()),
 		"without a default arm, a missed match silently returns undefined",
 	)
-	e.ExBad = "match x {\n  1 => \"one\"\n  2 => \"two\"\n  // if x == 3 → undefined, no warning!\n}"
-	e.ExGood = "match x {\n  1 => \"one\"\n  2 => \"two\"\n  _ => \"other\"   // default arm catches everything\n}"
+	e.ExBad = "match x {\n  1 => \"one\"\n  2 => \"two\"\n}"
+	e.ExGood = "match x {\n  1 => \"one\"\n  2 => \"two\"\n  _ => \"other\"\n}"
 	return Undefined, e
 }
 
-// ── S0003 — arithmetic produced NaN ──────────────────────────────────────────
-
-// CheckNaNResult is called after any numeric binary operation.
-// If the result is NaN it emits S0003 and returns (Undefined, error).
 func (interp *Interpreter) CheckNaNResult(result float64, op string, left, right *Value, node *ast.Node) (*Value, error) {
 	if !math.IsNaN(result) {
-		return nil, nil // ok
+		return nil, nil
 	}
 
 	leftDesc := fmt.Sprintf("`%s` (%s)", left.ToString(), left.TypeName())
@@ -138,19 +108,15 @@ func (interp *Interpreter) CheckNaNResult(result float64, op string, left, right
 		"NaN silently propagates — all further arithmetic with this value will also be NaN",
 		"common causes: undefined variable, null field access, non-numeric string in a math expression",
 	)
-	e.ExBad = "val x = undefined\nval y = x + 5   // NaN — x was never a number"
-	e.ExGood = "val x = 10\nval y = x + 5   // 15"
+	e.ExBad = "val x = undefined\nval y = x + 5"
+	e.ExGood = "val x = 10\nval y = x + 5"
 	return Undefined, e
 }
 
-// ── S0004 — array index out of bounds ────────────────────────────────────────
-
-// CheckIndexBounds is called by evalMember before calling GetIndex on an array.
-// If idx is outside [0, len) it emits S0004 and returns (Undefined, error).
 func (interp *Interpreter) CheckIndexBounds(arr *Value, idx int, node *ast.Node) (*Value, error) {
 	length := len(arr.ArrVal)
 	if idx >= 0 && idx < length {
-		return nil, nil // ok
+		return nil, nil
 	}
 
 	var detail string
@@ -167,19 +133,15 @@ func (interp *Interpreter) CheckIndexBounds(arr *Value, idx int, node *ast.Node)
 		fmt.Sprintf("guard the access:  if i >= 0 && i < arr.length { arr[i] }"),
 		detail,
 	)
-	e.ExBad = "val arr = [1, 2, 3]\nval x = arr[5]   // index 5 — array only has 3 elements"
+	e.ExBad = "val arr = [1, 2, 3]\nval x = arr[5]"
 	e.ExGood = "val arr = [1, 2, 3]\nif 5 < arr.length { val x = arr[5] }"
 	return Undefined, e
 }
 
-// ── S0005 / S0006 — spreading non-iterable or null/undefined ─────────────────
-
-// CheckArraySpread is called when spreading a value into an array literal.
-// Emits S0006 for null/undefined, S0005 for any other non-array type.
 func (interp *Interpreter) CheckArraySpread(val *Value, node *ast.Node) error {
 	switch val.Tag {
 	case TypeArray:
-		return nil // ok
+		return nil
 	case TypeNull, TypeUndefined:
 		e := interp.suspectError(
 			errfmt.ErrSuspectNullSpread,
@@ -201,12 +163,10 @@ func (interp *Interpreter) CheckArraySpread(val *Value, node *ast.Node) error {
 	}
 }
 
-// CheckObjectSpread is called when spreading a value into an object literal.
-// Emits S0006 for null/undefined, S0005 for primitive types.
 func (interp *Interpreter) CheckObjectSpread(val *Value, node *ast.Node) error {
 	switch val.Tag {
 	case TypeObject, TypeInstance:
-		return nil // ok
+		return nil
 	case TypeNull, TypeUndefined:
 		e := interp.suspectError(
 			errfmt.ErrSuspectNullSpread,
@@ -228,12 +188,6 @@ func (interp *Interpreter) CheckObjectSpread(val *Value, node *ast.Node) error {
 	}
 }
 
-// ── S0007 — calling result of expression that returned undefined ──────────────
-
-// CheckCallResultUndefined is called when a function call returns Undefined and
-// that return value is immediately used as a callee (i.e. the user does something
-// like:  fn getHandler() {}   getHandler()()  ).
-// Returns (Undefined, error) if fnResult is undefined/null.
 func (interp *Interpreter) CheckCallResultUndefined(fnResult *Value, callerNode *ast.Node) (*Value, error) {
 	if fnResult == nil || fnResult.Tag == TypeUndefined || fnResult.Tag == TypeNull {
 		resultDesc := "undefined"
@@ -252,7 +206,7 @@ func (interp *Interpreter) CheckCallResultUndefined(fnResult *Value, callerNode 
 			"a function without a `return` statement implicitly returns undefined",
 			"check for early `return` branches that forget to return a value",
 		)
-		e.ExBad = "fn make() { val x = 42 }   // forgot return\nval result = make()()"
+		e.ExBad = "fn make() { val x = 42 }\nval result = make()()"
 		e.ExGood = "fn make() { return 42 }\nval result = make()()"
 		return Undefined, e
 	}

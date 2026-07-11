@@ -1,16 +1,3 @@
-// Lunex lang — AST-based source formatter
-
-// Package formatter walks the Lunex AST produced by the parser and emits
-// canonically-formatted Lunex source code. This is the engine behind
-// `lunex fmt <file.lx>`.
-//
-// Design principles
-//   - Uses the AST, not raw text, so the output is always syntactically valid.
-//   - Two-space indentation throughout.
-//   - Spaces after commas, around binary operators, around `=` in declarations.
-//   - Space before `{` opening braces.
-//   - Each statement on its own line — no semicolons.
-//   - Blank line between top-level declarations for readability.
 package formatter
 
 import (
@@ -19,20 +6,16 @@ import (
 	"strings"
 )
 
-// Formatter holds the formatting state.
 type Formatter struct {
 	indent int
 	buf    strings.Builder
 }
 
-// Format takes a parsed AST root node and returns formatted Lunex source.
 func Format(root *ast.Node) string {
 	f := &Formatter{}
 	f.printNode(root, true)
 	return strings.TrimRight(f.buf.String(), "\n") + "\n"
 }
-
-// ── buffer helpers ────────────────────────────────────────────────────────────
 
 func (f *Formatter) writeLine(s string) {
 	if s == "" {
@@ -45,18 +28,13 @@ func (f *Formatter) writeLine(s string) {
 }
 
 func (f *Formatter) blankLine() {
-	// Only add a blank line if the last char written isn't already a blank line.
+
 	s := f.buf.String()
 	if !strings.HasSuffix(s, "\n\n") {
 		f.buf.WriteByte('\n')
 	}
 }
 
-// ── top-level dispatcher ──────────────────────────────────────────────────────
-
-// printNode dispatches to the specific printer for each node type.
-// topLevel controls whether blank-line separators are inserted between
-// top-level declarations.
 func (f *Formatter) printNode(n *ast.Node, topLevel bool) {
 	if n == nil {
 		return
@@ -107,23 +85,21 @@ func (f *Formatter) printNode(n *ast.Node, topLevel bool) {
 	case ast.AssertStmt:
 		f.writeLine("assert " + f.expr(n.Expr))
 	default:
-		// Generic expression statement fallback.
+
 		if n.Expr != nil {
 			f.writeLine(f.expr(n.Expr))
 		} else {
-			// Write expression directly when node is itself an expression.
+
 			f.writeLine(f.expr(n))
 		}
 	}
 }
 
-// ── statement printers ────────────────────────────────────────────────────────
-
 func (f *Formatter) printProgram(n *ast.Node) {
 	stmts := n.Body_
 	for i, stmt := range stmts {
 		f.printNode(stmt, true)
-		// Blank line between top-level fn/class declarations.
+
 		if i+1 < len(stmts) {
 			next := stmts[i+1]
 			if stmt.Type == ast.FnDecl || stmt.Type == ast.ClassDecl ||
@@ -221,7 +197,7 @@ func (f *Formatter) printExprStmt(n *ast.Node) {
 }
 
 func (f *Formatter) printLogStmt(n *ast.Node) {
-	// log is a built-in statement in some Lunex versions.
+
 	if n.Expr != nil {
 		f.writeLine("log " + f.expr(n.Expr))
 	}
@@ -239,12 +215,8 @@ func (f *Formatter) printIfStmt(n *ast.Node) {
 	f.printIfChain(n)
 }
 
-// printIfChain writes the full if / else if / else chain without buffer rewinds.
-// It writes the opening "if <test> {", the body, and then delegates the
-// closing brace + optional else branches to itself recursively.
 func (f *Formatter) printIfChain(n *ast.Node) {
-	// Opening brace is already written by the caller for else-if branches,
-	// so we write it here only for the very first `if`.
+
 	f.writeLine(fmt.Sprintf("if %s {", f.expr(n.Test)))
 	f.indent++
 	f.printBlockBody(n.Consequent)
@@ -252,7 +224,6 @@ func (f *Formatter) printIfChain(n *ast.Node) {
 	f.printElseChain(n.Alternate)
 }
 
-// printElseChain writes the closing "}" and any else/else-if continuation.
 func (f *Formatter) printElseChain(alt *ast.Node) {
 	if alt == nil {
 		f.writeLine("}")
@@ -407,11 +378,11 @@ func (f *Formatter) printExportDecl(n *ast.Node) {
 	if n.Declaration == nil {
 		return
 	}
-	// Capture the declaration as a string and prepend "export ".
+
 	sub := &Formatter{indent: f.indent}
 	sub.printNode(n.Declaration, false)
 	line := strings.TrimRight(sub.buf.String(), "\n")
-	// Strip the leading indent that writeLine added, then re-add with "export ".
+
 	indentStr := strings.Repeat("  ", f.indent)
 	if strings.HasPrefix(line, indentStr) {
 		line = line[len(indentStr):]
@@ -419,9 +390,6 @@ func (f *Formatter) printExportDecl(n *ast.Node) {
 	f.writeLine("export " + line)
 }
 
-// ── expression printer ────────────────────────────────────────────────────────
-
-// expr converts an AST node into a formatted expression string.
 func (f *Formatter) expr(n *ast.Node) string {
 	if n == nil {
 		return ""
@@ -528,7 +496,7 @@ func (f *Formatter) expr(n *ast.Node) string {
 		}
 		return fmt.Sprintf("%s %s", kw, n.Name)
 	default:
-		// Fallback: if it has a value, use that.
+
 		if n.Value != nil {
 			return fmt.Sprintf("%v", n.Value)
 		}
@@ -586,7 +554,7 @@ func (f *Formatter) formatObjectLit(n *ast.Node) string {
 			parts[i] = key
 		}
 	}
-	// Short objects stay inline; longer ones expand (heuristic: >60 chars).
+
 	inline := "{ " + strings.Join(parts, ", ") + " }"
 	if len(inline) <= 60 {
 		return inline

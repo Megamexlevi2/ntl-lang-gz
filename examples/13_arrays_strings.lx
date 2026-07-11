@@ -1,8 +1,6 @@
-// Example 13 — Array and string methods
 val io = @import("std.io")
 
 fn main() {
-  // ── String methods ────────────────────────────────────────────────────────
   val s = "  Hello, Lunex!  "
   io.log("original:    ", s)
   io.log("trim:        ", s.trim())
@@ -21,7 +19,6 @@ fn main() {
   io.log("split:       ", parts)
   io.log("join:        ", parts.join(" | "))
 
-  // ── Array methods ─────────────────────────────────────────────────────────
   val nums = [3, 1, 4, 1, 5, 9, 2, 6]
   io.log("")
   io.log("original:", nums)

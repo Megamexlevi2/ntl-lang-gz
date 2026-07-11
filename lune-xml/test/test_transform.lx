@@ -7,7 +7,6 @@ fn run() {
   val src = "<users><user role=\"admin\"><name>Alice</name></user><user role=\"guest\"><name>Bob</name></user></users>"
   val doc = xml.parse(src)
 
-  // clone — deep copy, mutations don't affect original
   val copy = xml.clone(doc)
   io.log("clone tag:", copy.tag)
   io.log("clone children:", copy.childCount())
@@ -15,33 +14,27 @@ fn run() {
   io.log("original untouched:", xml.attr(doc.children[0], "role"))
   io.log("clone mutated:", xml.attr(copy.children[0], "role"))
 
-  // walk — visits every node
   var tags = []
   xml.walk(doc, fn(n) { tags.push(n.tag) })
   io.log("walk tags:", tags)
 
-  // toObject
   val obj = xml.toObject(doc)
   io.log("toObject:", obj)
 
-  // fromObject
   val built = xml.fromObject("config", { host: "localhost", port: "3000" })
   io.log("fromObject:")
   io.log(xml.build(built))
 
-  // fromObject with array
   val list = xml.fromObject("items", { item: ["a", "b", "c"] })
   io.log("fromObject array:")
   io.log(xml.build(list))
 
-  // mapNodes — return null to remove node
   val doc2   = xml.parse("<root><keep>yes</keep><remove>no</remove><keep>also</keep></root>")
   val result = xml.mapNodes(doc2, fn(n) {
     if n.tag == "remove" { null } else { n }
   })
   io.log("mapNodes children after remove:", result.childCount())
 
-  // filterNodes — keep only matching nodes
   val doc3 = xml.parse("<list><item type=\"good\">a</item><item type=\"bad\">b</item><item type=\"good\">c</item></list>")
   xml.filterNodes(doc3, fn(n) {
     n.tag == "list" or xml.attr(n, "type") == "good"

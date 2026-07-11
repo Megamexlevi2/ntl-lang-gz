@@ -45,33 +45,22 @@ fn attr(node, name) {
   _query.attr(node, name)
 }
 
-// Serialize a node tree to a pretty XML string.
-//   xml.toString(root)
 fn toString(root) {
   _builder.build(root)
 }
 
-// Parse an XML string and return the root node.
-//   xml.fromString("<root><item>A</item></root>")
 fn fromString(src) {
   _parser.parse(src)
 }
 
-// Find the first element by tag name anywhere in the tree.
-//   xml.find(doc, "title")
 fn find(root, tag_) {
   _query.selectFirst(root, tag_)
 }
 
-// Find all elements by tag name.
-//   xml.findAll(doc, "item")
 fn findAll(root, tag_) {
   _query.selectAll(root, tag_)
 }
 
-// ─────────────────────────────────────────────────────────────
-// FULL API  —  all original functions below
-// ─────────────────────────────────────────────────────────────
 
 fn createElement(tag_) {
   _builder.createElement(tag_)

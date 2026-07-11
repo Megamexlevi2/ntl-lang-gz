@@ -1,4 +1,3 @@
-// Example 17 — Struct composition
 val io   = @import("std.io")
 val math = @import("std.math")
 
@@ -74,7 +73,6 @@ fn main() {
 
   io.log("")
 
-  // total area using reduce on array
   val total = shapes.reduce(fn(acc, s) { acc + s.area() }, 0.0)
   io.log("Total area:", total)
 }

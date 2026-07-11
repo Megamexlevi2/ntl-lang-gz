@@ -1,4 +1,3 @@
-// Example 08 — HTTP server
 val io   = @import("std.io")
 val http = @import("std.http")
 

@@ -1,8 +1,6 @@
-// Example 23 — Pipeline / builder pattern
 val io   = @import("std.io")
 val math = @import("std.math")
 
-// Chainable data pipeline
 fn Pipeline(data) {
   struct {
     fn map(f) {
@@ -26,7 +24,6 @@ fn Pipeline(data) {
     }
 
     fn sort() {
-      // bubble sort (small datasets)
       var arr = data.map(fn(x) { x })
       val len = arr.length
       var i = 0
@@ -62,7 +59,6 @@ fn Pipeline(data) {
 fn main() {
   val numbers = [5, 3, 8, 1, 9, 2, 7, 4, 6, 10]
 
-  // Chain operations
   val result = Pipeline(numbers)
     .filter(fn(x) { x % 2 == 0 })
     .map(fn(x) { x * x })
@@ -71,7 +67,6 @@ fn main() {
 
   io.log("even squares sorted:", result)
 
-  // More complex pipeline
   val words = ["banana", "apple", "cherry", "date", "elderberry", "fig"]
 
   val shortWords = Pipeline(words)
@@ -82,7 +77,6 @@ fn main() {
 
   io.log("short words (<=5) uppercased:", shortWords)
 
-  // Sum pipeline
   val total = Pipeline(numbers)
     .filter(fn(x) { x > 5 })
     .reduce(fn(acc, x) { acc + x }, 0)

@@ -1,5 +1,3 @@
-// David Dev — (c) 2026. Licensed under the Mozilla Public License 2.0.
-
 package runtime
 
 import (
@@ -36,8 +34,7 @@ func (interp *Interpreter) evalNew(node *ast.Node, env *Environment) (*Value, er
 func (interp *Interpreter) callClass(cls *Class, args []*Value, outerEnv *Environment) (*Value, error) {
 	inst := NewInstance(cls)
 	instVal := InstVal(inst)
-	// Super-class fields are initialized by the constructor via super() calls;
-	// iterating a freshly-allocated superInst.Fields (always empty) is dead code.
+
 	if initFn, ok := cls.Methods["constructor"]; ok {
 		fnEnv := NewEnvironment(initFn.Env)
 		fnEnv.Define("this", instVal, false)

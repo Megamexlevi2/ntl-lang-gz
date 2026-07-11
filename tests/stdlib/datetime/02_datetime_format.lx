@@ -1,6 +1,3 @@
-// Lunex — datetime — format
-// Format dates in multiple layouts
-// Lunex v0.8.1 · github.com/Megamexlevi2/lunex-lang-gz
 
 val io = @import("std.io"); val dt = @import("std.datetime")
 fn main() {

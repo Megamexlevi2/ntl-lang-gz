@@ -1,9 +1,4 @@
 #!/usr/bin/env sh
-# Lunex test suite — verifies all 105 standard tests pass.
-# Usage: bash tests/run_all.sh ./path/to/lunex
-#
-# IMPORTANT: The binary path MUST start with "./" or "/" (explicit path).
-# This avoids accidental execution of system-installed binaries.
 
 set -u
 
@@ -64,7 +59,7 @@ run_test() {
 }
 
 echo ""
-echo "\033[1mLunex Test Suite — v0.7.1\033[0m"
+echo "\033[1mLunex Test Suite\033[0m"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 BASE="$(cd "$(dirname "$0")" && pwd)"

@@ -42,9 +42,6 @@ fn _readIdent(src, pos) {
   { value: buf, pos: i }
 }
 
-// Find `pattern` in `src` starting at index `start`. Unlike the
-// runtime's `.indexOf(pattern, start)` (whose second argument is
-// currently ignored), this actually honors `start`.
 fn _findFrom(src, pattern, start) {
   var result = -1
   if start >= src.length {
@@ -61,10 +58,6 @@ fn _findFrom(src, pattern, start) {
   result
 }
 
-// Skip a processing instruction "<?...?>" (including the XML
-// declaration itself). `i` must point at the leading "<".
-// Returns the position just past "?>" (or end-of-string if
-// unterminated).
 fn _skipPI(src, i) {
   val end = _findFrom(src, "?>", i + 2)
   var pos = src.length
@@ -74,9 +67,6 @@ fn _skipPI(src, i) {
   pos
 }
 
-// Skip an XML comment "<!--...-->". `i` must point at the leading
-// "<". Returns the position just past "-->" (or end-of-string if
-// unterminated).
 fn _skipComment(src, i) {
   val end = _findFrom(src, "-->", i + 4)
   var pos = src.length
@@ -86,9 +76,6 @@ fn _skipComment(src, i) {
   pos
 }
 
-// Read a CDATA section "<![CDATA[...]]>". `i` must point at the
-// leading "<". Returns its raw inner content (not entity-decoded —
-// CDATA content is literal) and the position just past "]]>".
 fn _readCData(src, i) {
   val start = i + 9
   val end   = _findFrom(src, "]]>", start)
@@ -101,11 +88,6 @@ fn _readCData(src, i) {
   result
 }
 
-// Skip a DOCTYPE or other "<!...>" markup declaration. `i` must point
-// at the leading "<". Correctly steps over an internal subset
-// "[ ... ]" and quoted strings, so a ">" inside either of those
-// doesn't end the declaration early. Returns the position just past
-// the final ">".
 fn _skipDoctype(src, i) {
   var j     = i + 2
   var depth = 0
@@ -174,8 +156,6 @@ fn _parseNode(src, pos) {
     var j = i + 1
 
     if j < src.length and src[j] == "!" {
-      // Comment, CDATA, or DOCTYPE/markup declaration encountered
-      // where an element was expected — skip over it.
       var endPos = i
       if src.slice(i, i + 9) == "<![CDATA[" {
         val cdata = _readCData(src, i)
@@ -188,11 +168,8 @@ fn _parseNode(src, pos) {
       { node: null, pos: endPos }
 
     } else if j < src.length and src[j] == "?" {
-      // Processing instruction encountered where an element was
-      // expected — skip over it.
       { node: null, pos: _skipPI(src, i) }
 
-    // Closing tag — signal caller
     } else if j < src.length and src[j] == "/" {
       { node: null, pos: i, closing: true }
 
@@ -208,7 +185,6 @@ fn _parseNode(src, pos) {
       if selfClose { j = j + 1 }
       if j < src.length and src[j] == ">" { j = j + 1 }
 
-      // Build node and apply attrs in source order
       val n = nodeLib.newNode(tag)
       each pair in attrRes.pairs {
         n.setAttribute(pair[0], pair[1])
@@ -229,7 +205,6 @@ fn _parseNode(src, pos) {
             running = false
           } else if src[j] == "<" {
             if (j + 1) < src.length and src[j + 1] == "/" {
-              // Closing tag for this element
               while j < src.length and src[j] != ">" {
                 j = j + 1
               }
@@ -286,10 +261,6 @@ fn _parseNode(src, pos) {
   }
 }
 
-// Parse an XML string and return the root XmlNode.
-// Leading processing instructions (e.g. <?xml ... ?>), comments, and
-// DOCTYPE declarations are skipped over before locating the root
-// element. Returns null if no root element is found.
 fn parse(src) {
   var i        = _skipWS(src, 0)
   var scanning = true

@@ -4,7 +4,6 @@ val xml = @fimport("../main.lx")
 fn run() {
   io.log(io.bold("--- validate tests ---"))
 
-  // isWellFormed — good node
   val good = xml.createElement("person")
   xml.setAttribute(good, "id", "u1")
   xml.appendChild(good, xml.createTextElement("name", "Alice"))
@@ -12,7 +11,6 @@ fn run() {
   io.log("well-formed:", wf.ok)
   io.log("error empty:", wf.error.length == 0)
 
-  // validateSchema — all fields pass
   val s1 = xml.validateSchema(good, {
     tag:              "person"
     requiredAttrs:    ["id"]
@@ -20,7 +18,6 @@ fn run() {
   })
   io.log("schema valid:", s1.ok)
 
-  // validateSchema — missing required attr
   val noAttr = xml.createElement("person")
   val s2 = xml.validateSchema(noAttr, {
     tag:           "person"
@@ -29,7 +26,6 @@ fn run() {
   io.log("missing attr ok=false:", s2.ok == false)
   io.log("missing attr error:", s2.error)
 
-  // validateSchema — missing required child
   val noChild = xml.createElement("book")
   val s3 = xml.validateSchema(noChild, {
     requiredChildren: ["title"]
@@ -37,7 +33,6 @@ fn run() {
   io.log("missing child ok=false:", s3.ok == false)
   io.log("missing child error:", s3.error)
 
-  // validateSchema — maxChildren
   val over = xml.createElement("group")
   xml.appendChild(over, xml.createElement("item"))
   xml.appendChild(over, xml.createElement("item"))
@@ -45,12 +40,10 @@ fn run() {
   val s4 = xml.validateSchema(over, { maxChildren: 2 })
   io.log("maxChildren ok=false:", s4.ok == false)
 
-  // validateSchema — requireText
   val empty = xml.createElement("title")
   val s5 = xml.validateSchema(empty, { requireText: true })
   io.log("requireText ok=false:", s5.ok == false)
 
-  // validateTree — full document
   val src = "<catalog><book id=\"b1\"><title>Go</title></book></catalog>"
   val doc = xml.parse(src)
   val t1 = xml.validateTree(doc, {
@@ -60,7 +53,6 @@ fn run() {
   })
   io.log("tree valid:", t1.ok)
 
-  // validateTree — catches deep error
   val src2 = "<catalog><book><title></title></book></catalog>"
   val doc2 = xml.parse(src2)
   val t2   = xml.validateTree(doc2, {

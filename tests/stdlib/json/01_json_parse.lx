@@ -1,5 +1,3 @@
-// Lunex — json — parse
-// Parse a JSON document and read nested fields
 
 val io   = @import("std.io")
 val json = @import("std.json")

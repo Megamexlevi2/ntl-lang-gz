@@ -4,14 +4,12 @@ val xml = @fimport("../main.lx")
 fn run() {
   io.log(io.bold("--- parser tests ---"))
 
-  // Simple nested tags
   val doc1 = xml.parse("<root><name>Lunex</name><version>2.0</version></root>")
   io.log("tag:", doc1.tag)
   io.log("children:", doc1.childCount())
   val nameNode = xml.selectFirst(doc1, "name")
   io.log("name text:", xml.text(nameNode))
 
-  // XML declaration header
   val doc2 = xml.parse("<?xml version=\"1.0\" encoding=\"UTF-8\"?><catalog><book id=\"b1\"><title>Go</title></book><book id=\"b2\"><title>Rust</title></book></catalog>")
   io.log("catalog tag:", doc2.tag)
   val books = xml.selectAll(doc2, "book")
@@ -21,13 +19,11 @@ fn run() {
     io.log("  book id=" + xml.attr(b, "id") + " title=" + xml.text(t))
   }
 
-  // Self-closing tag
   val doc3 = xml.parse("<config><db host=\"localhost\" port=\"5432\" /><cache ttl=\"60\" /></config>")
   io.log("self-close children:", doc3.childCount())
   io.log("db host:", xml.attr(xml.selectFirst(doc3, "db"), "host"))
   io.log("cache ttl:", xml.attr(xml.selectFirst(doc3, "cache"), "ttl"))
 
-  // Round-trip: build then parse
   val orig   = xml.createElementWithAttrs("user", { id: "u1", role: "admin" })
   xml.appendChild(orig, xml.createTextElement("name", "Alice"))
   val src    = xml.build(orig)
@@ -36,7 +32,6 @@ fn run() {
   io.log("round-trip id:", xml.attr(parsed, "id"))
   io.log("round-trip name:", xml.text(xml.selectFirst(parsed, "name")))
 
-  // Deeply nested
   val deep = xml.parse("<a><b><c><d>deep text</d></c></b></a>")
   val d    = xml.selectPath(deep, "a.b.c.d")
   io.log("deep text:", xml.text(d))

@@ -1,5 +1,3 @@
-// David Dev — (c) 2026. Licensed under the Mozilla Public License 2.0.
-
 package runtime
 
 import (
@@ -75,7 +73,7 @@ func mathSign(x float64) float64 {
 	return 0
 }
 
-var randState = uint64(time.Now().UnixNano()) | 1 // seeded from wall clock; never zero
+var randState = uint64(time.Now().UnixNano()) | 1
 
 func pseudoRandom() float64 {
 	randState ^= randState << 13

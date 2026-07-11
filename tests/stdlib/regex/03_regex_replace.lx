@@ -1,6 +1,3 @@
-// Lunex — regex — replace
-// Replace pattern matches
-// Lunex v0.8.1 · github.com/Megamexlevi2/lunex-lang-gz
 
 val io = @import("std.io"); val regex = @import("std.regex")
 fn main() {

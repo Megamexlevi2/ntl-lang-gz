@@ -4,14 +4,12 @@ val xml = @fimport("../main.lx")
 fn run() {
   io.log(io.bold("--- node struct tests ---"))
 
-  // createElement returns an XmlNode struct
   val n = xml.createElement("div")
   io.log("tag:", n.tag)
   io.log("text empty:", n.text.length == 0)
   io.log("hasChildren:", n.hasChildren())
   io.log("childCount:", n.childCount())
 
-  // setAttribute / getAttribute via struct methods
   xml.setAttribute(n, "id",    "box")
   xml.setAttribute(n, "class", "active")
   io.log("id:",    xml.getAttribute(n, "id"))
@@ -19,19 +17,16 @@ fn run() {
   io.log("hasAttr id:",    n.hasAttr("id"))
   io.log("hasAttr style:", n.hasAttr("style"))
 
-  // setText / getText via struct methods
   val leaf = xml.createTextElement("title", "Lunex XML v2")
   io.log("leaf text:", leaf.getText())
   io.log("leaf text field:", leaf.text)
 
-  // appendChild updates children array
   xml.appendChild(n, leaf)
   io.log("hasChildren after append:", n.hasChildren())
   io.log("childCount after append:", n.childCount())
   io.log("childAt(0) tag:", n.childAt(0).tag)
   io.log("childAt(0) text:", n.childAt(0).getText())
 
-  // toString
   io.log("toString:", n.toString())
 
   io.log(io.green("node struct tests passed"))

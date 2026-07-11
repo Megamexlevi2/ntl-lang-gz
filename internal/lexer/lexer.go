@@ -21,7 +21,7 @@ const (
 )
 
 var builtinKeywords = map[string]bool{
-	"var": true, "val": true, "let": true, "const": true,
+	"var": true, "val": true,
 	"fn": true,
 	"if": true, "else": true, "elif": true, "unless": true,
 	"while": true, "for": true, "loop": true, "in": true, "of": true,

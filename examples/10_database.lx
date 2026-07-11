@@ -1,4 +1,3 @@
-// Example 10 — In-memory database
 val io = @import("std.io")
 val db = @import("std.db")
 
@@ -53,7 +52,6 @@ fn main() {
   })
   io.log("After delete:", users.count())
 
-  // Display as table
   val remaining = users.find(struct {})
   io.table(remaining)
 }

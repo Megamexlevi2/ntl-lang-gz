@@ -17,8 +17,8 @@ import (
 
 type Options struct {
 	Strict    bool
-	TypeCheck bool // force type checking even without lunex.types = on
-	LowLevel  bool // force low-level mode even without lunex.lowlevel = on
+	TypeCheck bool
+	LowLevel  bool
 	Silent    bool
 	Profile   bool
 	REPL      bool
@@ -57,13 +57,11 @@ func (c *Compiler) Interpreter() *runtime.Interpreter {
 	return c.interp
 }
 
-// fileFlags holds compile-time directives parsed from top-level source comments.
 type fileFlags struct {
 	typesEnabled    bool
 	lowLevelEnabled bool
 }
 
-// parseFileFlags scans the leading directive lines of source without running the full parser.
 func parseFileFlags(source string) fileFlags {
 	var f fileFlags
 	for _, line := range strings.Split(source, "\n") {
@@ -240,25 +238,20 @@ func (c *Compiler) Check(source, filename string) error {
 	return nil
 }
 
-// Format formats Lunex source by parsing it to an AST and pretty-printing.
-// It also applies the coercion fixer pass (FixCoercions) which rewrites
-// implicit type mismatches such as `10 + "10"` → `str(10) + "10"`.
-// Falls back to the legacy indent-only formatter if parsing fails.
 func Format(source string) string {
 	tokens, err := lexer.Tokenize(source, "<fmt>")
 	if err == nil {
 		tree, err2 := parser.Parse(tokens, "<fmt>")
 		if err2 == nil {
-			// Apply coercion fixes before pretty-printing.
+
 			formatter.FixCoercions(tree)
 			return formatter.Format(tree)
 		}
 	}
-	// Fallback: indent-only pass (safe for unparseable files).
+
 	return formatLegacy(source)
 }
 
-// formatLegacy is the old text-based indent formatter used as a fallback.
 func formatLegacy(source string) string {
 	lines := strings.Split(source, "\n")
 	var out []string

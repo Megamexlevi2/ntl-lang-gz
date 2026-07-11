@@ -1,7 +1,5 @@
-// Example 07 — Pattern matching
 val io = @import("std.io")
 
-// match on value with wildcard fallback
 fn httpStatus(code) {
   match code {
     200 => "OK"
@@ -17,7 +15,6 @@ fn httpStatus(code) {
   }
 }
 
-// match used to classify without ranges (use if/else for ranges)
 fn classify(n) {
   if n < 0 {
     "negative"

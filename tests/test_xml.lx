@@ -1,12 +1,9 @@
-// Lunex lang — XML parsing test (requires lune-xml external module)
-// Install: lunex install Megamexlevi2/lune-xml
 
 val io  = @import("std.io")
 val xml = @import("lune-xml")
 val fs  = @import("std.fs")
 
 fn main() {
-  // Malformed XML — unclosed tag
   val badXml = "<root><child>text</root>"
 
   try {
@@ -16,7 +13,6 @@ fn main() {
     io.log(io.yellow("✓ Caught parse error: " + str(err)))
   }
 
-  // Valid XML with single-quote attributes
   val goodXml = "<root><child attr='value'>text</child></root>"
 
   try {

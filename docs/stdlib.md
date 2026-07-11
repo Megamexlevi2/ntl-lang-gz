@@ -1,6 +1,6 @@
 # Standard Library Reference
 
-Complete API reference for all built-in modules in Lunex v0.8.1.
+Complete API reference for all built-in modules in Lunex v0.9.0.
 
 All modules are embedded in the Lunex binary — no installation required.
 Import any module with `@import("std.<name>")`.

@@ -1,5 +1,3 @@
-// Lunex — json — validation
-// Check whether strings are valid JSON
 
 val io   = @import("std.io")
 val json = @import("std.json")

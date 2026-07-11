@@ -25,10 +25,6 @@ func NewWithLines(tokens []lexer.Token, filename string, lines []string) *Parser
 	return &Parser{tokens: tokens, filename: filename, lines: lines}
 }
 
-// isAllowedKeywordAsName returns true for keywords that are contextually valid
-// as identifiers (e.g. "get", "set", "from", "as", "of", "in", "static",
-// "get", "module") — these appear in common patterns and the lexer emits them
-// as KEYWORD but the parser allows them in name positions.
 func isAllowedKeywordAsName(name string) bool {
 	switch name {
 	case "get", "set", "from", "as", "of", "in", "static",
@@ -43,8 +39,6 @@ func isAllowedKeywordAsName(name string) bool {
 	return false
 }
 
-// isHardReservedKeyword returns true for keywords that must NEVER be used as
-// identifiers in any context — using them produces E0073.
 func isHardReservedKeyword(name string) bool {
 	switch name {
 	case "val", "var", "let", "const", "fn", "if", "else", "elif",
@@ -148,7 +142,6 @@ func (p *Parser) errorf(t lexer.Token, format string, args ...interface{}) error
 	}
 }
 
-// contextualCode returns an error code based on the token and message context.
 func (p *Parser) contextualCode(t lexer.Token, msg string) string {
 	lower := strings.ToLower(msg)
 	if strings.Contains(lower, "reserved keyword") {
@@ -183,8 +176,6 @@ func (p *Parser) contextualCode(t lexer.Token, msg string) string {
 	return ""
 }
 
-// contextualSuggestion returns a human-readable, context-aware suggestion
-// based on the offending token and the surrounding token stream.
 func (p *Parser) contextualSuggestion(t lexer.Token, msg string) string {
 	lower := strings.ToLower(msg)
 
@@ -192,7 +183,6 @@ func (p *Parser) contextualSuggestion(t lexer.Token, msg string) string {
 		return ""
 	}
 
-	// Look at the token before the offending one for context
 	prev := lexer.Token{}
 	if p.pos > 1 {
 		prev = p.tokens[p.pos-2]
@@ -201,14 +191,14 @@ func (p *Parser) contextualSuggestion(t lexer.Token, msg string) string {
 
 	switch t.StrVal() {
 	case ",":
-		// Comma in wrong place — likely trailing comma or missing operator
+
 		if prev.Type == lexer.PUNCTUATION && (prevVal == "(" || prevVal == "[" || prevVal == "{") {
 			return "a leading comma is not allowed — remove it or place it after the first element"
 		}
 		if prev.Type == lexer.PUNCTUATION && (prevVal == ",") {
 			return "double comma detected — remove one of them"
 		}
-		// Comma at statement level — user may have confused it with a separator
+
 		return "a comma is not valid here — if you are listing values, wrap them in [ ] for an array or ( ) for a grouped expression"
 
 	case ")":
@@ -242,9 +232,8 @@ func (p *Parser) contextualSuggestion(t lexer.Token, msg string) string {
 		return "arrow functions need parameters on the left — e.g. fn(x) => x * 2  or  (x) => x * 2"
 	}
 
-	// Generic expected-X-but-got-Y messages
 	if strings.Contains(lower, "expected") && strings.Contains(lower, "but got") {
-		// Pull out what was expected
+
 		start := strings.Index(lower, "expected")
 		end := strings.Index(lower[start:], "but got")
 		if end > 0 {
@@ -294,7 +283,7 @@ func (p *Parser) parseBlock() (*ast.Node, error) {
 		}
 	}
 	if p.check(lexer.EOF, "") {
-		// Report at the OPENING brace so the user sees which block was never closed.
+
 		return nil, &errfmt.LunexError{
 			Message:    fmt.Sprintf("unclosed block — '{' on line %d was never closed with '}'", openTok.Line),
 			File:       p.filename,
@@ -314,7 +303,7 @@ func (p *Parser) parseBlock() (*ast.Node, error) {
 
 func (p *Parser) parseStmt() (*ast.Node, error) {
 	t := p.current()
-	// Catch common mistakes: 'return' and 'class' are not part of Lunex.
+
 	if t.Type == lexer.IDENTIFIER {
 		switch t.StrVal() {
 		case "return":
@@ -407,14 +396,12 @@ func (p *Parser) parseStmt() (*ast.Node, error) {
 
 	if t.Type == lexer.OPERATOR && t.StrVal() == "@" {
 		if p.peek(1).StrVal() == "import" {
-			// Fall through to expression statement parsing below
+
 		} else {
 			return p.parseDecorated()
 		}
 	}
 
-	// Handle 'log' as a built-in statement keyword even though it is now an IDENTIFIER
-	// (removed from keywords so modules can use it as a variable name).
 	if t.Type == lexer.IDENTIFIER && t.StrVal() == "log" {
 		return p.parseLog()
 	}
@@ -456,7 +443,7 @@ func (p *Parser) parseVarDecl() (*ast.Node, error) {
 
 	nameTok, err := p.eat(lexer.IDENTIFIER, "")
 	if err != nil {
-		// If the current token is a hard-reserved keyword, give a much better error
+
 		cur := p.current()
 		if cur.Type == lexer.KEYWORD && isHardReservedKeyword(cur.StrVal()) {
 			kw := cur.StrVal()
@@ -567,7 +554,7 @@ func (p *Parser) parseFnDecl() (*ast.Node, error) {
 	if p.checkTok(lexer.IDENTIFIER) || p.checkTok(lexer.KEYWORD) {
 		nameTok := p.advance()
 		name := nameTok.StrVal()
-		// Detect reserved keywords used as function names
+
 		if nameTok.Type == lexer.KEYWORD && !isAllowedKeywordAsName(name) {
 			return nil, p.errorf(nameTok,
 				"reserved keyword '%s' cannot be used as a function name — choose a different name (e.g. '%s_fn' or 'my_%s')",
@@ -632,7 +619,7 @@ func (p *Parser) parseFnParams() ([]*ast.Param, error) {
 			var err error
 			if p.checkTok(lexer.KEYWORD) {
 				nameTok = p.advance()
-				// Hard-reserved keywords cannot be parameter names
+
 				if isHardReservedKeyword(nameTok.StrVal()) {
 					return nil, p.errorf(nameTok,
 						"reserved keyword '%s' cannot be used as a parameter name — "+
@@ -971,9 +958,8 @@ func (p *Parser) parseUse() (*ast.Node, error) {
 	modTok := p.advance()
 	modName := modTok.StrVal()
 
-	// Collect path segments: e.g. use std/io, use core/fs
 	for p.check(lexer.OPERATOR, "/") {
-		p.advance() // consume '/'
+		p.advance()
 		segTok := p.current()
 		if segTok.Type != lexer.IDENTIFIER && segTok.Type != lexer.KEYWORD {
 			break
@@ -982,7 +968,6 @@ func (p *Parser) parseUse() (*ast.Node, error) {
 		modName += "/" + segTok.StrVal()
 	}
 
-	// Default alias is the last path segment
 	alias := modName
 	if idx := strings.LastIndex(modName, "/"); idx >= 0 {
 		alias = modName[idx+1:]
@@ -1024,7 +1009,7 @@ func (p *Parser) parseIf() (*ast.Node, error) {
 		return nil, err
 	}
 	node := &ast.Node{Type: ast.IfStmt, Test: test, Consequent: body, Line: t.Line, Col: t.Col}
-	root := node // save root so we always return the first if node
+	root := node
 	for {
 		if p.checkKw("elif") {
 			p.advance()
@@ -1053,11 +1038,11 @@ func (p *Parser) parseIf() (*ast.Node, error) {
 		}
 		node.Alternate = alt
 	}
-	return root, nil // return root, not the last elif
+	return root, nil
 }
 
 func (p *Parser) parseIfExpr() (*ast.Node, error) {
-	t := p.advance() // consume "if"
+	t := p.advance()
 	test, err := p.parseExpr()
 	if err != nil {
 		return nil, err
@@ -1151,7 +1136,7 @@ func (p *Parser) parseFor() (*ast.Node, error) {
 		return nil, err
 	}
 	id = nameTok.StrVal()
-	// two-variable form: for idx, val in iterable
+
 	var indexVar string
 	if p.eatIf(lexer.PUNCTUATION, ",") {
 		valTok, err2 := p.eat(lexer.IDENTIFIER, "")
@@ -2534,9 +2519,9 @@ func (p *Parser) parsePrimary() (*ast.Node, error) {
 
 func (p *Parser) parseAtImport() (*ast.Node, error) {
 	t := p.current()
-	p.advance() // consume '@'
+	p.advance()
 	forceLocal := false
-	// 'import' and 'fimport' may be lexed as a KEYWORD or IDENTIFIER.
+
 	if p.check(lexer.KEYWORD, "import") || p.check(lexer.IDENTIFIER, "import") {
 		p.advance()
 	} else if p.check(lexer.KEYWORD, "fimport") || p.check(lexer.IDENTIFIER, "fimport") {

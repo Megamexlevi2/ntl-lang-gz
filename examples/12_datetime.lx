@@ -1,10 +1,8 @@
-// Example 12 — Datetime module
 val io       = @import("std.io")
 val datetime = @import("std.datetime")
 val math     = @import("std.math")
 
 fn main() {
-  // Current time
   val now = datetime.now()
   io.log("ISO:       ", now.iso)
   io.log("Year:      ", now.year)
@@ -13,20 +11,16 @@ fn main() {
   io.log("Unix:      ", now.unix)
   io.log("Timestamp: ", now.timestamp)
 
-  // Format
   io.log("Formatted: ", datetime.format(now, "YYYY-MM-DD"))
 
-  // Parse a date string
   val birthday = datetime.parse("1990-07-04")
   io.log("Parsed year:", birthday.year)
   io.log("Parsed month:", birthday.month)
   io.log("Parsed day:", birthday.day)
 
-  // From unix timestamp
   val epoch = datetime.fromTimestamp(0)
   io.log("Unix epoch:", epoch.iso)
 
-  // Diff (returns ms)
   val diff = datetime.diff(now, birthday)
   val days = math.floor(diff / 86400000)
   io.log("Days since birthday:", days)

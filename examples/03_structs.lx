@@ -1,7 +1,5 @@
-// Example 03 — Structs and factory functions
 val io = @import("std.io")
 
-// Factory function returning a struct with methods
 fn Animal(name, sound) {
   val self = struct {
     name  = name
@@ -18,7 +16,6 @@ fn Animal(name, sound) {
   self
 }
 
-// Closure-based counter
 fn Counter(start) {
   var count = start
   struct {

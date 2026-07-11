@@ -1,5 +1,3 @@
-// Lunex — json — compact
-// Minified JSON output for storage or transport
 
 val io   = @import("std.io")
 val json = @import("std.json")

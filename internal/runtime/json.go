@@ -1,5 +1,3 @@
-// David Dev — (c) 2026. Licensed under the Mozilla Public License 2.0.
-
 package runtime
 
 import (
@@ -54,7 +52,7 @@ func jsonStringify(val *Value, indent string, depth int) string {
 		if len(val.ObjVal) == 0 {
 			return "{}"
 		}
-		// Sort keys for stable, deterministic output.
+
 		keys := make([]string, 0, len(val.ObjVal))
 		for k, v := range val.ObjVal {
 			if v == nil || v.Tag == TypeFunction {
@@ -131,7 +129,7 @@ func jsonUnquote(s string, out *string) error {
 		}
 	}
 	inner := s[1 : len(s)-1]
-	// Fast path: no escape sequences.
+
 	if !strings.ContainsRune(inner, '\\') {
 		*out = inner
 		return nil
@@ -212,16 +210,14 @@ func jsonParseObject(s string) (*Value, error) {
 	parts := jsonSplit(inner)
 	for _, part := range parts {
 		part = strings.TrimSpace(part)
-		// Find the colon that separates key from value by scanning past the
-		// closing quote of the key — avoids splitting on colons inside values
-		// like {"url": "https://example.com"}.
+
 		colonIdx := -1
 		if len(part) > 0 && part[0] == '"' {
 			for i := 1; i < len(part); i++ {
 				if part[i] == '\\' {
-					i++ // skip escaped character
+					i++
 				} else if part[i] == '"' {
-					// Scan whitespace then expect ':'
+
 					for j := i + 1; j < len(part); j++ {
 						if part[j] == ':' {
 							colonIdx = j
@@ -235,7 +231,7 @@ func jsonParseObject(s string) (*Value, error) {
 			}
 		}
 		if colonIdx < 0 {
-			colonIdx = strings.Index(part, ":") // fallback for unquoted keys
+			colonIdx = strings.Index(part, ":")
 		}
 		if colonIdx < 0 {
 			continue

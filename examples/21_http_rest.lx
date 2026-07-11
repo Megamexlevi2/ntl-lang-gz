@@ -1,4 +1,3 @@
-// Example 21 — REST HTTP server with routing
 val http = @import("std.http")
 val io   = @import("std.io")
 

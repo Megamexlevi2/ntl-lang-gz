@@ -1,5 +1,3 @@
-// Lunex — json — round-trip
-// Parse after stringify and keep values intact
 
 val io   = @import("std.io")
 val json = @import("std.json")

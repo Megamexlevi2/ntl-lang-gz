@@ -22,7 +22,6 @@ fn run() {
   _passed = 0
   _failed = 0
 
-  // -- Named entity decoding --
   _check(
     "decode &lt; &gt; &amp;",
     xml.text(xml.parse("<m>1 &lt; 2 &amp; 3 &gt; 0</m>")),
@@ -34,17 +33,13 @@ fn run() {
     "\"q'"
   )
 
-  // -- Numeric character references round-trip verbatim --
   val numDoc = xml.parse("<m>copy &#169; 2024 &#x2764;</m>")
   _check("numeric entity preserved on parse", xml.text(numDoc), "copy &#169; 2024 &#x2764;")
   _check("numeric entity stable on re-serialize", xml.buildFragment(numDoc), "<m>copy &#169; 2024 &#x2764;</m>")
 
-  // -- Attribute value entity decoding --
   val attrDoc = xml.parse("<a href=\"foo?x=1&amp;y=2\">link</a>")
   _check("attribute entity decode", xml.attr(attrDoc, "href"), "foo?x=1&y=2")
 
-  // -- Attribute escaping handles every special char, every time --
-  // (previously only the FIRST occurrence of each character got escaped)
   val escNode = xml.createElementWithAttrs("a", { title: "say \"hi\" & 'bye' <now>" })
   _check(
     "attribute escaping covers all occurrences",
@@ -52,14 +47,12 @@ fn run() {
     "<a title=\"say &quot;hi&quot; &amp; 'bye' &lt;now&gt;\" />"
   )
 
-  // -- build -> parse -> build round trip is byte-stable --
   val n = xml.createElementWithAttrs("a", { href: "x.html?a=1&b=2", title: "He said \"hi\"" })
   xml.appendChild(n, xml.createTextElement("label", "A & B < C > D"))
   val out1 = xml.buildFragment(n)
   val out2 = xml.buildFragment(xml.parse(out1))
   _check("build -> parse -> build is stable", out2, out1)
 
-  // -- Comments containing ">" don't corrupt the document --
   val cdoc = xml.parse("<root><!-- a > b --><item>ok</item></root>")
   _check("comment with > inside is skipped cleanly", cdoc.childCount(), 1)
   _check("comment with > leaves no stray text", cdoc.getText(), "")
@@ -69,7 +62,6 @@ fn run() {
   _check("comment-only element has no text", cdoc2.getText(), "")
   _check("comment-only element has no children", cdoc2.childCount(), 0)
 
-  // -- CDATA sections --
   val cdataDoc = xml.parse("<root><![CDATA[<b>raw</b> & stuff]]></root>")
   _check("CDATA content preserved raw (not parsed as markup)", xml.text(cdataDoc), "<b>raw</b> & stuff")
   _check("CDATA flag set when parsed", cdataDoc.isCData(), true)
@@ -90,28 +82,22 @@ fn run() {
     "<data>weird ]]&gt; end</data>"
   )
 
-  // -- Processing instructions don't corrupt structure --
   val piDoc = xml.parse("<root><?pi data?><item>x</item></root>")
   _check("PI child is skipped, root keeps 1 real child", piDoc.childCount(), 1)
   _check("PI doesn't get parsed as the next tag", piDoc.children[0].tag, "item")
   _check("element after a PI keeps its text", xml.text(piDoc.children[0]), "x")
 
-  // -- DOCTYPE with an internal subset containing ">" --
   val dtdSrc = "<!DOCTYPE note [ <!ENTITY foo \"bar\"> ]><note>hi</note>"
   val dtdDoc = xml.parse(dtdSrc)
   _check("DOCTYPE with internal subset doesn't break parsing", dtdDoc.tag, "note")
   _check("DOCTYPE doesn't swallow the element's text", xml.text(dtdDoc), "hi")
 
-  // -- Multiple leading constructs (decl + comment + DOCTYPE) --
   val fullSrc = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<!-- top comment -->\n" +
                 "<!DOCTYPE note>\n" +
                 "<note>hello</note>"
   _check("XML decl + comment + DOCTYPE all skipped", xml.parse(fullSrc).tag, "note")
 
-  // -- Deterministic attribute order --
-  // (Lunex's Object.keys() iteration order is randomized per call --
-  // attribute output must not depend on it)
   val a1 = xml.buildFragment(xml.createElementWithAttrs("a", { zeta: "1", alpha: "2", mid: "3" }))
   val a2 = xml.buildFragment(xml.createElementWithAttrs("a", { zeta: "1", alpha: "2", mid: "3" }))
   _check("createElementWithAttrs is deterministic across calls", a1, a2)
@@ -124,7 +110,6 @@ fn run() {
     "<img src=\"a.png\" alt=\"A\" />"
   )
 
-  // -- buildFragmentCompact --
   val compactNode = xml.createElement("a")
   xml.setAttribute(compactNode, "x", "1")
   xml.appendChild(compactNode, xml.createTextElement("b", "hi"))

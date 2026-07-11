@@ -122,7 +122,7 @@ var codeRegistry = map[string]codeDisplay{
 	"E0012":          {"E0012", "circular import detected", "circular dependency — cycle in import graph"},
 	"E0013":          {"E0013", "module failed to load", "error while loading module"},
 	"E0014":          {"E0014", "module is internal", "internal module — cannot be imported by user code"},
-	"E0015":          {"E0015", "binary module load failed", "cannot decode .nax or .nc file"},
+	"E0015":          {"E0015", "binary module load failed", "cannot decode .nax or .nax file"},
 	"E0020":          {"E0020", "type mismatch", "incompatible types"},
 	"E0021":          {"E0021", "wrong number of arguments", "arity mismatch"},
 	"E0022":          {"E0022", "invalid argument type", "expected a different type here"},
@@ -619,7 +619,7 @@ func buildSuggestions(code, name, msg string, similar []string) []string {
 
 	case "E0010F":
 		add("path is resolved relative to the current file, then the working directory")
-		add("accepted extensions: .lx (source), .nax (archive), .nc (bytecode)")
+		add("accepted extensions: .lx (source), .nax (archive), .nax (bytecode)")
 		return out
 
 	case "E0011":
@@ -643,7 +643,7 @@ func buildSuggestions(code, name, msg string, similar []string) []string {
 
 	case "E0015":
 		add("the file could not be decoded as a Lunex binary module")
-		add("accepted formats: .nax (built with `lunex pack`), .nc (built with `lunex build`)")
+		add("accepted formats: .nax (built with `lunex pack`), .nax (built with `lunex build`)")
 		add("rebuild the archive with `lunex pack <directory>` if it may be outdated")
 		return out
 
@@ -800,7 +800,7 @@ func buildSuggestions(code, name, msg string, similar []string) []string {
 
 	case "E0070":
 		add("every Lunex program must define `fn main()` as its entry point")
-		add("move your top-level code inside main:\n\n  fn main() {\n    // your code here\n  }")
+		add("move your top-level code inside main:\n\n  fn main() {\n    your code here\n  }")
 		return out
 
 	case "E0071":

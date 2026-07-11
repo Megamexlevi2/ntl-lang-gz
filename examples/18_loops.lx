@@ -1,4 +1,3 @@
-// Example 18 — Loops and arithmetic
 val io   = @import("std.io")
 val math = @import("std.math")
 
@@ -62,15 +61,12 @@ fn padLeft(s, width) {
 }
 
 fn main() {
-  // Summation
   io.log("Sum 1..100: ", sumTo(100))
   io.log("Sum 1..1000:", sumTo(1000))
 
-  // Array sum
   val numbers = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
   io.log("Array sum:  ", arraySum(numbers))
 
-  // Primes up to 50
   var primes = []
   var n = 2
   while n <= 50 {
@@ -81,7 +77,6 @@ fn main() {
   }
   io.log("Primes <= 50:", primes)
 
-  // Fibonacci sequence
   var fibs = []
   var k = 0
   while k <= 10 {
@@ -90,7 +85,6 @@ fn main() {
   }
   io.log("Fibonacci:  ", fibs)
 
-  // Nested loop — multiplication table 1..5
   io.log("")
   io.log("Multiplication table 1..5:")
   var row = 1

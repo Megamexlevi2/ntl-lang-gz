@@ -16,9 +16,11 @@ warn() { printf '%b[!]%b %s\n' "$YELLOW" "$NC" "$*"; }
 fail() { printf '%b[error]%b %s\n' "$RED" "$NC" "$*" >&2; exit 1; }
 info() { printf '%b[info]%b %s\n' "$CYAN" "$NC" "$*"; }
 
-NTL_VERSION="$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' version.json | sed 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')"
-GO_MIN="1.23"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+NTL_VERSION="$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' "$SCRIPT_DIR/internal/app/version.json" | sed 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')"
+
+GO_MIN="1.23"
 
 banner() {
     printf '\n  Lunex lang  v%s\n  Created by David Dev\n  GitHub: https://github.com/Megamexlevi2\n\n' "$NTL_VERSION"
@@ -129,7 +131,7 @@ build_go_binary() {
     log_file="$(mktemp)"
 
     if ! env GONOSUMDB='*' GOFLAGS='-mod=mod' GOOS="$goos" GOARCH="$goarch" CGO_ENABLED=0 \
-        go build -trimpath -tags netgo -ldflags="-s -w" -o "$target_bin" . >"$log_file" 2>&1; then
+        go build -trimpath -tags netgo -ldflags="-s -w" -o "$target_bin" ./cmd/lunex >"$log_file" 2>&1; then
         sed '/^go: downloading/d' "$log_file" >&2
         rm -f "$log_file"
         fail "Build failed"

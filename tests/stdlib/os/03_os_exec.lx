@@ -1,6 +1,3 @@
-// Lunex — os — exec
-// Run shell commands and capture output
-// Lunex v0.8.1 · github.com/Megamexlevi2/lunex-lang-gz
 
 val io = @import("std.io"); val os = @import("std.os")
 fn main() {

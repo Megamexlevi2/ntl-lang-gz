@@ -1,4 +1,3 @@
-// Query helpers — all operate on XmlNode structs
 
 fn _findAll(node, tag, results) {
   if node.tag == tag {
@@ -51,27 +50,22 @@ fn _findByPath(node, parts, depth) {
   }
 }
 
-// Return all nodes in the tree matching tag (depth-first)
 fn selectAll(root, tag) {
   var results = []
   _findAll(root, tag, results)
   results
 }
 
-// Return the first node in the tree matching tag
 fn selectFirst(root, tag) {
   _findFirst(root, tag)
 }
 
-// Return all nodes where attrs[attrName] == attrValue
 fn selectByAttr(root, attrName, attrValue) {
   var results = []
   _findByAttr(root, attrName, attrValue, results)
   results
 }
 
-// Navigate a dot-separated path from the root tag down
-// Example: selectPath(doc, "catalog.book.title")
 fn selectPath(root, path) {
   val parts = path.split(".")
   if parts.length == 0 or parts[0] != root.tag {
@@ -81,12 +75,10 @@ fn selectPath(root, path) {
   }
 }
 
-// Direct children of a node (not recursive)
 fn children(node) {
   node.children
 }
 
-// Direct children matching a specific tag
 fn childrenByTag(node, tag) {
   var results = []
   each child in node.children {
@@ -97,12 +89,10 @@ fn childrenByTag(node, tag) {
   results
 }
 
-// Text content of a node
 fn text(node) {
   node.getText()
 }
 
-// Attribute value shorthand
 fn attr(node, name) {
   node.getAttribute(name)
 }

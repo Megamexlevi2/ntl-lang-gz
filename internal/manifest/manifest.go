@@ -1,6 +1,3 @@
-// Package manifest handles reading and writing Lunex project manifests (config.lx).
-// This is a minimal package that only deals with project configuration —
-// package installation is handled by the external Lunex package manager.
 package manifest
 
 import (
@@ -15,14 +12,12 @@ import (
 	"lunex/internal/runtime"
 )
 
-// ManifestRepository holds repository metadata from config.lx.
 type ManifestRepository struct {
 	Type   string `json:"type"`
 	URL    string `json:"url"`
 	Branch string `json:"branch"`
 }
 
-// ManifestScripts holds the scripts block from config.lx.
 type ManifestScripts struct {
 	Build string `json:"build"`
 	Dev   string `json:"dev"`
@@ -31,12 +26,10 @@ type ManifestScripts struct {
 	Lint  string `json:"lint"`
 }
 
-// ManifestEngines holds version constraints from config.lx.
 type ManifestEngines struct {
 	Lunex string `json:"lunex"`
 }
 
-// ManifestMetadata holds project metadata timestamps and keywords.
 type ManifestMetadata struct {
 	CreatedAt string   `json:"createdAt"`
 	UpdatedAt string   `json:"updatedAt"`
@@ -44,7 +37,6 @@ type ManifestMetadata struct {
 	Tags      []string `json:"tags"`
 }
 
-// Manifest holds the parsed contents of a Lunex project's config.lx file.
 type Manifest struct {
 	Name          string             `json:"name"`
 	Version       string             `json:"version"`
@@ -72,8 +64,6 @@ type Manifest struct {
 	Bin           map[string]string  `json:"bin"`
 }
 
-// resolveConfigPath resolves a directory path to its config.lx file, or
-// returns the path unchanged if it already points to a file.
 func resolveConfigPath(p string) string {
 	info, err := os.Stat(p)
 	if err == nil && info.IsDir() {
@@ -86,8 +76,6 @@ func resolveConfigPath(p string) string {
 	return p
 }
 
-// LoadManifest reads a config.lx (or JSON manifest) from the given path.
-// p may be a directory (config.lx is inferred) or a direct file path.
 func LoadManifest(p string) (*Manifest, error) {
 	p = resolveConfigPath(p)
 	data, err := os.ReadFile(p)
@@ -258,7 +246,6 @@ func manifestFromValue(v *runtime.Value) (*Manifest, bool) {
 	m.Dependencies = getStrMap("dependencies")
 	m.Bin = getStrMap("bin")
 
-	// Repository block
 	repoFields := getStrObj("repository", "type", "url", "branch")
 	m.Repository = ManifestRepository{
 		Type:   repoFields["type"],
@@ -266,7 +253,6 @@ func manifestFromValue(v *runtime.Value) (*Manifest, bool) {
 		Branch: repoFields["branch"],
 	}
 
-	// Scripts block
 	scriptFields := getStrObj("scripts", "build", "dev", "test", "clean", "lint")
 	m.Scripts = ManifestScripts{
 		Build: scriptFields["build"],
@@ -276,13 +262,11 @@ func manifestFromValue(v *runtime.Value) (*Manifest, bool) {
 		Lint:  scriptFields["lint"],
 	}
 
-	// Engines block
 	engFields := getStrObj("engines", "lunex")
 	m.Engines = ManifestEngines{
 		Lunex: engFields["lunex"],
 	}
 
-	// Metadata block
 	if metaVal, ok := v.ObjVal["metadata"]; ok && metaVal != nil && metaVal.Tag == runtime.TypeObject {
 		metaFields := getStrObj("metadata", "createdAt", "updatedAt")
 		m.Metadata = ManifestMetadata{
@@ -293,7 +277,6 @@ func manifestFromValue(v *runtime.Value) (*Manifest, bool) {
 		}
 	}
 
-	// Targets
 	if targets, ok := v.ObjVal["targets"]; ok && targets != nil && targets.Tag == runtime.TypeArray {
 		for _, item := range targets.ArrVal {
 			if item == nil {
@@ -418,7 +401,6 @@ func parseConfigLX(content string) *Manifest {
 	return m
 }
 
-// SaveManifest writes a Manifest back to a config.lx file.
 func SaveManifest(p string, m *Manifest) error {
 	p = resolveConfigPath(p)
 	if err := os.MkdirAll(filepath.Dir(p), 0755); err != nil {
@@ -471,8 +453,6 @@ fn build() {
 	return os.WriteFile(p, []byte(content), 0644)
 }
 
-// InitManifest creates a new config.lx in the given directory.
-// Returns an error if config.lx already exists.
 func InitManifest(dir string, name string) error {
 	p := filepath.Join(dir, "config.lx")
 	if _, err := os.Stat(p); err == nil {

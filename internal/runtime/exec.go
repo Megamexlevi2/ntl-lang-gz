@@ -1,5 +1,3 @@
-// David Dev — (c) 2026. Licensed under the Mozilla Public License 2.0.
-
 package runtime
 
 import (
@@ -9,6 +7,7 @@ import (
 )
 
 func (interp *Interpreter) Exec(program *ast.Node) (*Value, error) {
+	interp.resetExecutionBudget()
 	env := NewEnvironment(interp.globals)
 	interp.topEnv = env
 	for _, stmt := range program.Body_ {
@@ -117,8 +116,8 @@ func (interp *Interpreter) checkTopLevelExpr(expr *ast.Node, stmt *ast.Node) *er
 				"all executable logic must live inside `fn main()`",
 			},
 			Suggestion: suggestion,
-			ExBad:      "test()   // top-level call — not allowed",
-			ExGood:     "fn main() {\n  test()   // call inside main — correct\n}",
+			ExBad:      "test()   top-level call not allowed",
+			ExGood:     "fn main() {\n  test()\n}",
 		}
 		return e
 
@@ -138,8 +137,8 @@ func (interp *Interpreter) checkTopLevelExpr(expr *ast.Node, stmt *ast.Node) *er
 	return nil
 }
 
-// ExecAsModule runs source as a module.
 func (interp *Interpreter) ExecAsModule(source, filename string) (*Value, error) {
+	interp.resetExecutionBudget()
 	prevFilename := interp.filename
 	interp.filename = filename
 	defer func() { interp.filename = prevFilename }()
@@ -162,9 +161,9 @@ func (interp *Interpreter) CallMain() error {
 				"every Lunex program requires a `fn main()` entry point",
 				"top-level code outside `main` is not allowed in executable files",
 			},
-			Suggestion: "add a main function:\n\n  fn main() {\n    // your code here\n  }",
+			Suggestion: "add a main function:\n\n  fn main() {\n    your code here\n  }",
 			ExGood:     "fn main() {\n  val io = @import(\"std.io\")\n  io.log(\"hello\")\n}",
-			ExBad:      "val io = @import(\"std.io\")\nio.log(\"hello\")   // error: no main()",
+			ExBad:      "val io = @import(\"std.io\")\nio.log(\"hello\")",
 		}
 		return e
 	}
@@ -176,6 +175,7 @@ func (interp *Interpreter) CallMain() error {
 }
 
 func (interp *Interpreter) CallExport(name string, args ...interface{}) (interface{}, error) {
+	interp.resetExecutionBudget()
 	if interp.globals == nil {
 		return nil, fmt.Errorf("interpreter not initialized")
 	}
@@ -226,7 +226,6 @@ func goToValue(v interface{}) *Value {
 	}
 }
 
-// valueToGo converts a Lunex *Value to a plain Go type.
 func valueToGo(v *Value) interface{} {
 	if v == nil {
 		return nil
@@ -272,6 +271,9 @@ func (interp *Interpreter) execBlock(stmts []*ast.Node, env *Environment) (*Valu
 }
 
 func (interp *Interpreter) execNode(node *ast.Node, env *Environment) (*Value, error) {
+	if err := interp.consumeExecutionBudget(node); err != nil {
+		return nil, err
+	}
 	if node == nil {
 		return Undefined, nil
 	}

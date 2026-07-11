@@ -1,9 +1,3 @@
-// (c) David Dev 2026. Licensed under the Mozilla Public License, Version 2.0.
-
-// Machine-code cache for the native package.
-// Stubs are stored on disk in a compact binary format (.mcx) keyed by
-// architecture and loop kind.  These helpers are retained for API compatibility.
-
 package native
 
 import (
@@ -16,8 +10,6 @@ import (
 	"runtime"
 )
 
-// NativeCacheDir returns the directory used to store .mcx cache files.
-// Delegates to the platform adaptor for consistent cross-platform resolution.
 func NativeCacheDir() string {
 	return adaptor.NativeCacheDir()
 }
@@ -30,11 +22,8 @@ func nativeCacheKey(kind string) string {
 	return hex.EncodeToString(h.Sum(nil))[:16]
 }
 
-// mcx header magic bytes.
-var mcxMagic = [4]byte{0x4E, 0x4D, 0x43, 0x58} // "NMCX"
+var mcxMagic = [4]byte{0x4E, 0x4D, 0x43, 0x58}
 
-// LoadNativeCached reads a compiled stub from the .mcx cache.
-// Returns nil when the entry does not exist or has a bad header.
 func LoadNativeCached(kind string) []byte {
 	dir := NativeCacheDir()
 	path := filepath.Join(dir, nativeCacheKey(kind)+".mcx")
@@ -54,7 +43,6 @@ func LoadNativeCached(kind string) []byte {
 	return payload
 }
 
-// StoreNativeCached writes a compiled stub to the .mcx cache.
 func StoreNativeCached(kind string, code []byte) {
 	if len(code) == 0 {
 		return
@@ -72,8 +60,6 @@ func StoreNativeCached(kind string, code []byte) {
 	_ = os.WriteFile(path, append(hdr, code...), 0600)
 }
 
-// ClearNativeCache removes all .mcx files from the cache directory and returns
-// the number of files removed.
 func ClearNativeCache() int {
 	dir := NativeCacheDir()
 	entries, err := os.ReadDir(dir)

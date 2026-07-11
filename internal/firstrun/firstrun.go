@@ -1,6 +1,5 @@
 //go:build !js
 
-// Package firstrun handles the first-run welcome animation for Lunex.
 package firstrun
 
 import (
@@ -219,7 +218,7 @@ func showWelcomeAnimation(version string, useColor bool) {
 	goos := runtime.GOOS
 
 	ntlDir, _ := adaptor.MarkerPath()
-	// MarkerPath returns the .initialized file path; get its directory for display.
+
 	if ntlDir != "" {
 		ntlDir = filepath.Dir(ntlDir)
 	}
@@ -251,10 +250,6 @@ func showWelcomeAnimation(version string, useColor bool) {
 	}
 }
 
-// Check detects if this is the first time Lunex has been run.
-// If so, it displays the welcome animation with environment setup steps,
-// then marks the first run as complete.
-// Gracefully adapts to restricted directories and non-interactive terminals.
 func Check(version string) {
 	first, mp := isFirstRun()
 	if !first {

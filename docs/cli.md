@@ -1,6 +1,6 @@
 # CLI Reference
 
-Complete reference for the `lunex` command-line tool and its built-in Go package manager.
+Complete reference for the `lunex` command-line tool and its built-in package manager.
 
 ---
 
@@ -20,7 +20,7 @@ Complete reference for the `lunex` command-line tool and its built-in Go package
 
 ### `lunex run`
 
-Run a Lunex source file, compiled bytecode, or archive.
+Run a Lunex source file or archive.
 
 ```
 lunex run <file> [--emit ast|ir]
@@ -35,15 +35,14 @@ Supported file extensions:
 
 | Extension | Description               |
 |-----------|---------------------------|
-| `.lx`     | Lunex source file         |
-| `.nc`     | Compiled bytecode         |
-| `.nax`    | Compiled archive          |
+| `.lx`     | Lunex source file |
+| `.nax`    | Compiled archive  |
 
 **Examples:**
 
 ```bash
 lunex run main.lx
-lunex run build/app.nc
+lunex run build/app.nax
 lunex run --emit ast main.lx
 ```
 
@@ -110,7 +109,7 @@ lunex -e 'val io = @import("std.io"); fn main() { io.log("hello") }'
 
 ### `lunex build`
 
-Compile a `.lx` source file to bytecode.
+Compile a `.lx` source file or project entry to an archive.
 
 ```
 lunex build [file] [-o <output>]
@@ -120,13 +119,13 @@ Without arguments, reads `config.lx` and compiles the entry point.
 
 | Flag            | Description                                          |
 |-----------------|------------------------------------------------------|
-| `-o <file>`     | Output path (default: `<input>.nc`)                  |
-| `--format nax`  | Output as a `.nax` archive instead of `.nc`          |
+| `-o <file>`     | Output path (default: `<input>.nax`) |
+| `--format nax`  | Output as a `.nax` archive          |
 
 **Examples:**
 
 ```bash
-lunex build main.lx -o dist/app.nc
+lunex build main.lx -o dist/app.nax
 lunex build src/math.lx -o dist/math.nax --format nax
 ```
 
@@ -157,13 +156,13 @@ lunex see_errors <file>
 
 ### `lunex dis`
 
-Disassemble a compiled `.nc` bytecode file.
+Inspect a compiled `.nax` archive file.
 
 ```
-lunex dis <file.nc>
+lunex dis <file.nax>
 ```
 
-Writes an annotated file alongside the input showing the bytecode instructions.
+Writes an annotated file alongside the input showing the archive contents.
 
 ---
 
@@ -264,7 +263,7 @@ lunex platform
 
 ### `lunex runtimes`
 
-List available execution engines (interpreter, bytecode VM, JIT).
+List available execution engines (interpreter, archive loader, JIT).
 
 ```
 lunex runtimes
@@ -277,7 +276,7 @@ lunex runtimes
 ```
 lunex set cache <dir>     # set custom cache directory
 lunex set cache reset     # restore default cache directory
-lunex cache               # inspect on-disk bytecode cache
+lunex cache               # inspect on-disk archive cache
 lunex cache clear         # clear on-disk cache
 lunex memcache            # inspect in-process memory cache
 lunex memcache clear      # clear memory cache

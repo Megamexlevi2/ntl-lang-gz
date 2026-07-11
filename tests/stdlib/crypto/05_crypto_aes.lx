@@ -1,6 +1,3 @@
-// Lunex — crypto — symmetric encryption
-// Encrypt and decrypt using crypto.encrypt / crypto.decrypt
-// Lunex v0.8.1 · github.com/Megamexlevi2/lunex-lang-gz
 
 val io     = @import("std.io")
 val crypto = @import("std.crypto")

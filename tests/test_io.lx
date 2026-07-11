@@ -1,5 +1,3 @@
-// Lunex lang — io module test
-// Tests: io.log, io.warn, io.err
 
 val io = @import("std.io")
 

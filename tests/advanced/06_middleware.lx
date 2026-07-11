@@ -1,6 +1,3 @@
-// Lunex — middleware chain
-// HTTP-style middleware composition using .length and if/else return
-// Lunex v0.8.1 · github.com/Megamexlevi2/lunex-lang-gz
 
 val io = @import("std.io")
 fn compose(mws, handler) {

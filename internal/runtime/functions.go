@@ -1,5 +1,3 @@
-// David Dev — (c) 2026. Licensed under the Mozilla Public License 2.0.
-
 package runtime
 
 import (
@@ -26,7 +24,7 @@ func (interp *Interpreter) evalFnExpr(node *ast.Node, env *Environment) (*Value,
 
 func (interp *Interpreter) evalArrowFn(node *ast.Node, env *Environment) (*Value, error) {
 	MarkEscaped(env)
-	// Capture 'this' from the enclosing lexical scope at creation time.
+
 	capturedThis, _ := env.Get("this")
 	fn := &Function{
 		Name:         "",
@@ -74,8 +72,7 @@ func (interp *Interpreter) evalCall(node *ast.Node, env *Environment) (*Value, e
 			if err != nil {
 				return nil, err
 			}
-			// For array subscript calls like arr[0](), use GetIndex so the
-			// numeric index maps to the slot instead of a string property key.
+
 			if obj.Tag == TypeArray && k.Tag == TypeNumber {
 				fnVal = obj.GetIndex(int(k.NumVal))
 			} else {
@@ -84,7 +81,7 @@ func (interp *Interpreter) evalCall(node *ast.Node, env *Environment) (*Value, e
 		} else {
 			key, _ := node.Callee.Prop.(string)
 			fnVal = obj.Get(key)
-			// Channel method dispatch: send, recv, close
+
 			if (fnVal == nil || fnVal.Tag == TypeUndefined) && obj.Tag == TypeChannel {
 				ch := obj.ChanVal
 				switch key {
@@ -101,7 +98,7 @@ func (interp *Interpreter) evalCall(node *ast.Node, env *Environment) (*Value, e
 					}})
 				}
 			}
-			// Detect missing method and give a rich error with suggestions
+
 			if fnVal == nil || fnVal.Tag == TypeUndefined {
 				similar := errfmt.FindSimilar(key, objKeys(obj))
 				objName := ""
@@ -221,10 +218,6 @@ func (interp *Interpreter) callUserFunction(fn *Function, args []*Value, thisVal
 	}
 	defer func() { interp.callDepth-- }()
 
-	// Restore the source file context the function was defined in so that
-	// errors thrown inside it (including cross-module calls via @fimport) are
-	// attributed to the correct file and source lines rather than to whatever
-	// file the caller lives in.
 	if fn.SourceFile != "" {
 		prevFile := interp.filename
 		prevLines := interp.sourceLines
@@ -236,7 +229,6 @@ func (interp *Interpreter) callUserFunction(fn *Function, args []*Value, thisVal
 		}()
 	}
 
-	// Per-function profiling with per-function sampling (fixes: inflated *32, global callCount).
 	var fnProf *jit.FnProfile
 	var t0 int64
 	if fn.Name != "" {
@@ -246,16 +238,13 @@ func (interp *Interpreter) callUserFunction(fn *Function, args []*Value, thisVal
 		}
 	}
 
-	// Save outer defer stack so this call frame gets its own clean slate.
 	savedDefers := interp.defers
 	interp.defers = nil
 
 	fnEnv := NewEnvironment(fn.Env)
-	// Return fnEnv to the pool once this call frame exits.
-	// The defer fires after all local uses of fnEnv are done, including
-	// the deferred-statement flush below.
+
 	defer ReleaseEnvironment(fnEnv)
-	// Arrow functions capture 'this' lexically; regular functions use the call-site 'this'.
+
 	effectiveThis := thisVal
 	if fn.IsArrow && fn.CapturedThis != nil {
 		effectiveThis = fn.CapturedThis
@@ -280,9 +269,7 @@ func (interp *Interpreter) callUserFunction(fn *Function, args []*Value, thisVal
 	var execErr error
 	if bodyNode.Type == ast.Block {
 		stmts := bodyNode.Body_
-		// Hoist all fn declarations inside the block so that functions
-		// declared anywhere in the body are visible from the first statement.
-		// This allows calling a nested fn before its declaration site.
+
 		for _, stmt := range stmts {
 			if stmt != nil && stmt.Type == ast.FnDecl && stmt.Name != "" {
 				if _, already := fnEnv.GetLocal(stmt.Name); !already {
@@ -318,9 +305,6 @@ func (interp *Interpreter) callUserFunction(fn *Function, args []*Value, thisVal
 		result, execErr = interp.evalExpr(bodyNode, fnEnv)
 	}
 
-	// Execute deferred statements in LIFO order before returning.
-	// The DeferStmt parser stores the deferred block in node.Body (*ast.Node),
-	// not node.Expr — use execNode on the body node directly.
 	localDefers := interp.defers
 	interp.defers = savedDefers
 	for i := len(localDefers) - 1; i >= 0; i-- {
@@ -332,7 +316,6 @@ func (interp *Interpreter) callUserFunction(fn *Function, args []*Value, thisVal
 		}
 	}
 
-	// Record actual elapsed time without the erroneous *32 inflation.
 	if fnProf != nil && t0 != 0 {
 		elapsed := time.Now().UnixNano() - t0
 		if interp.profiler.RecordAndCheckHot(fn.Name, elapsed) {

@@ -1,8 +1,6 @@
-// Example 02 — Variables and destructuring
 val io = @import("std.io")
 
 fn main() {
-  // val = immutable, var = mutable
   val name   = "Lunex"
   val age    = 30
   val height = 1.75
@@ -13,12 +11,10 @@ fn main() {
   io.log("height:", height)
   io.log("active:", active)
 
-  // var allows reassignment
   var counter = 0
   counter = counter + 1
   io.log("counter:", counter)
 
-  // Struct destructuring
   val user = struct {
     name = "Alice"
     role = "admin"
@@ -26,12 +22,10 @@ fn main() {
   val { name: uname, role } = user
   io.log("user:", uname, "role:", role)
 
-  // Array destructuring
   val items = ["first", "second", "third"]
   val [first, second] = items
   io.log("first:", first, "second:", second)
 
-  // Template strings
   val msg = `Hello, ${name}! You are ${age} years old.`
   io.log(msg)
 }

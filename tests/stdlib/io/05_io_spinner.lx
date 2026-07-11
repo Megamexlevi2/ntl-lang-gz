@@ -1,6 +1,3 @@
-// Lunex — io — progress display
-// Show progress states using io.info and io.success
-// Lunex v0.8.1 · github.com/Megamexlevi2/lunex-lang-gz
 
 val io       = @import("std.io")
 val datetime = @import("std.datetime")

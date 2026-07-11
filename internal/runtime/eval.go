@@ -1,5 +1,3 @@
-// David Dev — (c) 2026. Licensed under the Mozilla Public License 2.0.
-
 package runtime
 
 import (
@@ -10,6 +8,9 @@ import (
 )
 
 func (interp *Interpreter) evalExpr(node *ast.Node, env *Environment) (*Value, error) {
+	if err := interp.consumeExecutionBudget(node); err != nil {
+		return nil, err
+	}
 	if node == nil {
 		return Undefined, nil
 	}
@@ -149,7 +150,7 @@ func (interp *Interpreter) evalMember(node *ast.Node, env *Environment) (*Value,
 		return obj.Get(propVal.ToString()), nil
 	}
 	key, _ := node.Prop.(string)
-	// If object is null/undefined, give a clear error instead of panicking
+
 	if obj.Tag == TypeNull || obj.Tag == TypeUndefined {
 		objName := ""
 		if node.Object != nil && node.Object.Type == ast.Identifier {
@@ -222,7 +223,7 @@ func (interp *Interpreter) evalBinary(node *ast.Node, env *Environment) (*Value,
 			return StringVal(left.StrVal + right.StrVal), nil
 		}
 		if left.Tag == TypeString || right.Tag == TypeString {
-			// Produce a precise, actionable error showing exactly which side is the problem.
+
 			var detail string
 			if left.Tag == TypeString && (right.TypeName() == "undefined" || right.TypeName() == "null") {
 				detail = fmt.Sprintf(

@@ -1,4 +1,3 @@
-// Lunex lang — utils module test
 
 val io    = @import("std.io")
 val utils = @import("std.utils")
@@ -6,27 +5,22 @@ val utils = @import("std.utils")
 fn main() {
   io.log("=== utils test ===")
 
-  // Time
   io.log("now():", utils.now())
   io.log("timestamp():", utils.timestamp())
 
-  // Array utils
   var arr = [3, 1, 4, 1, 5, 9, 2, 6]
   io.log("sum:", utils.sum(arr))
   io.log("min:", utils.min(arr))
   io.log("max:", utils.max(arr))
   io.log("mean:", utils.mean(arr))
 
-  // String utils
   io.log("camelCase:", utils.camelCase("hello world"))
   io.log("snakeCase:", utils.snakeCase("HelloWorld"))
   io.log("slugify:", utils.slugify("Hello World!"))
 
-  // Range
   var r = utils.range(5)
   io.log("range(5):", r)
 
-  // UUID
   io.log("uuid:", utils.uuid())
 
   io.log("utils test done")

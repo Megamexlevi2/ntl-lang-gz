@@ -1,6 +1,3 @@
-// Lunex — math — random
-// random() and derived integer ranges
-// Lunex v0.8.1 · github.com/Megamexlevi2/lunex-lang-gz
 
 val io = @import("std.io"); val math = @import("std.math")
 fn randInt(min, max) { math.floor(math.random() * (max - min + 1)) + min }

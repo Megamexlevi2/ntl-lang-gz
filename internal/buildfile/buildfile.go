@@ -18,8 +18,6 @@ type Config struct {
 	Optimize bool
 }
 
-// DefaultConfig returns a Config whose version is always sourced from
-// the embedded version.json via meta.Version().
 func DefaultConfig() Config {
 	return Config{
 		Name:     "app",
@@ -67,7 +65,6 @@ func Parse(path string) (Config, error) {
 	return cfg, nil
 }
 
-// Generate writes a new config.lx using the current runtime version.
 func Generate(path string, name string) error {
 	content := fmt.Sprintf(`
 val project = {

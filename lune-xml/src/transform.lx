@@ -16,12 +16,10 @@ fn _cloneNode(n) {
   copy
 }
 
-// Deep-clone a node and all its descendants
 fn clone(n) {
   _cloneNode(n)
 }
 
-// Visit every node depth-first, calling fn_(node) on each
 fn walk(root, fn_) {
   fn_(root)
   each child in root.children {
@@ -29,8 +27,6 @@ fn walk(root, fn_) {
   }
 }
 
-// Transform every node through fn_(node).
-// Return the node to keep it, return null to remove it.
 fn mapNodes(root, fn_) {
   val mapped = fn_(root)
   if mapped {
@@ -48,8 +44,6 @@ fn mapNodes(root, fn_) {
   }
 }
 
-// Remove children (recursively) for which predicate(node) returns false.
-// Mutates in place and returns root.
 fn filterNodes(root, predicate) {
   var kept = []
   each child in root.children {
@@ -84,18 +78,10 @@ fn _toObj(root) {
   }
 }
 
-// Convert an XML tree to a plain Lunex object.
-// Text nodes become strings; repeated siblings become arrays.
 fn toObject(root) {
   _toObj(root)
 }
 
-// Convert a plain Lunex object to an XML tree.
-// Arrays produce repeated sibling elements.
-//
-// Keys are sorted alphabetically before being applied: Lunex's
-// Object.keys() iteration order is randomized per call, so sorting
-// keeps the resulting element order deterministic across runs.
 fn fromObject(tag, obj) {
   val root = nodeLib.newNode(tag)
   var keys = Object.keys(obj)

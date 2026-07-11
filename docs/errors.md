@@ -112,7 +112,7 @@ Error codes follow the pattern `E####` for hard errors.
 | Code  | Name                    | Common cause                                                    |
 |-------|-------------------------|-----------------------------------------------------------------|
 | E0061 | BuildError              | `lunex build` failed                                            |
-| E0062 | BytecodeVersionMismatch | `.nc` file compiled with an incompatible Lunex version          |
+| E0062 | ArchiveVersionMismatch  | `.nax` archive compiled with an incompatible Lunex version     |
 | E0063 | ArchiveCorrupt          | `.nax` file is malformed or incomplete                          |
 | E0064 | CacheCorrupt            | Bytecode cache entry is corrupt (`lunex memcache clear` to fix) |
 | E0065 | JITCompileError         | JIT compilation failed; falling back to interpreter             |

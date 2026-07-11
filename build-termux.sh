@@ -32,7 +32,7 @@ build_go() {
     goarch="$(normalize_go_arch "$arch")"
     echo "Building lunex for linux/$goarch..."
     GOOS="$GOOS" GOARCH="$goarch" CGO_ENABLED=0 \
-        go build -trimpath -ldflags "-s -w" -o "$out" .
+        go build -trimpath -ldflags "-s -w" -o "$out" ./cmd/lunex
     chmod +x "$out"
     echo "  -> $out"
 }

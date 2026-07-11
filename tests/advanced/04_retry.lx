@@ -1,6 +1,3 @@
-// Lunex — retry with backoff
-// Retry a failing op with exponential backoff using loop state
-// Lunex v0.8.1 · github.com/Megamexlevi2/lunex-lang-gz
 
 val io       = @import("std.io")
 val datetime = @import("std.datetime")

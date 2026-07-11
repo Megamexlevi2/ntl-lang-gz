@@ -1,13 +1,6 @@
 val nodeLib  = @fimport("./node.lx")
 val entities = @fimport("./entities.lx")
 
-// Render a node's attributes as ` k="v" k2="v2" ...`.
-//
-// Order comes from n.attrOrder (insertion order tracked by
-// setAttribute) so output is deterministic. Any keys present in
-// n.attrs but missing from attrOrder (set via direct mutation) are
-// appended afterwards in alphabetical order — also for determinism,
-// since Lunex's Object.keys() order is randomized per call.
 fn _attrsToString(n) {
   var result = ""
   var seen    = {}
@@ -85,51 +78,34 @@ fn _serializeCompact(n) {
   }
 }
 
-// Serialize to full XML document string (with <?xml header)
 fn build(root) {
   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + _serialize(root, 0)
 }
 
-// Serialize without <?xml header — useful for embedding fragments
 fn buildFragment(n) {
   _serialize(n, 0)
 }
 
-// Serialize to a single-line, whitespace-free XML string (with
-// <?xml header) — useful for sending XML over the wire.
 fn buildCompact(root) {
   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + _serializeCompact(root)
 }
 
-// Serialize a fragment to a single-line, whitespace-free string
-// without the <?xml header.
 fn buildFragmentCompact(n) {
   _serializeCompact(n)
 }
 
-// Create an empty element
 fn createElement(tag) {
   nodeLib.newNode(tag)
 }
 
-// Create an element with text content
 fn createTextElement(tag, text) {
   nodeLib.newTextNode(tag, text)
 }
 
-// Create an element whose text content is serialized as a CDATA
-// section (no escaping), e.g. for embedding SQL, JSON, or markup.
 fn createCDataElement(tag, text) {
   nodeLib.newCDataNode(tag, text)
 }
 
-// Create an element and set multiple attributes at once.
-//
-// `attrs` is a plain object. Because Lunex's Object.keys() iteration
-// order is randomized per call (not insertion order), attribute names
-// are sorted alphabetically before being applied, so the resulting
-// element — and its serialized output — is deterministic across runs.
-// Use createElementWithAttrPairs() if you need a specific order.
 fn createElementWithAttrs(tag, attrs) {
   val n    = nodeLib.newNode(tag)
   var keys = Object.keys(attrs)
@@ -140,11 +116,6 @@ fn createElementWithAttrs(tag, attrs) {
   n
 }
 
-// Create an element from an ordered list of [key, value] pairs,
-// preserving that exact attribute order in the output — use this
-// instead of createElementWithAttrs() when attribute order matters.
-//
-// Example: createElementWithAttrPairs("img", [["src", "a.png"], ["alt", "A"]])
 fn createElementWithAttrPairs(tag, pairs) {
   val n = nodeLib.newNode(tag)
   each pair in pairs {

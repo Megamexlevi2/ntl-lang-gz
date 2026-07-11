@@ -273,13 +273,13 @@ func packModuleArchive(dir, outputFile, mainEntry string) error {
 				SourceFile: p,
 				SourceText: string(source),
 			}
-			ncData, err := bytecode.EncodeExportedWithAST(chunk, result.AST)
+			objectData, err := bytecode.EncodeExportedWithAST(chunk, result.AST)
 			if err != nil {
 				return fmt.Errorf("compile error for %s: %w", rel, err)
 			}
 			entries = append(entries, pendingEntry{name: rel, data: source})
 			sourceIndex := len(entries) - 1
-			entries = append(entries, pendingEntry{name: strings.TrimSuffix(rel, ".lx") + ".nc", data: ncData})
+			entries = append(entries, pendingEntry{name: strings.TrimSuffix(rel, ".lx") + ".nax", data: objectData})
 			ncIndex := len(entries) - 1
 			if mainIndex < 0 {
 				if mainEntry == "" {
@@ -294,7 +294,7 @@ func packModuleArchive(dir, outputFile, mainEntry string) error {
 			if base == "main.lx" && mainEntry == "" {
 				mainIndex = ncIndex
 			}
-		case ".nc":
+		case ".nax":
 			data, err := os.ReadFile(p)
 			if err != nil {
 				return fmt.Errorf("cannot read %s: %w", rel, err)
@@ -491,7 +491,7 @@ func Resolve(name string) (string, bool) {
 		return name, true
 	}
 
-	for _, ext := range []string{".lx", ".nax", ".nc"} {
+	for _, ext := range []string{".lx", ".nax", ".nax"} {
 		if !strings.HasSuffix(strings.ToLower(name), ext) {
 			if info, err := os.Stat(name + ext); err == nil && !info.IsDir() {
 				return name + ext, true
@@ -718,21 +718,21 @@ func SaveManifest(p string, m *Manifest) error {
 
 	var sb strings.Builder
 
-	sb.WriteString("// config.lx — project manifest\n")
-	sb.WriteString(fmt.Sprintf("// %s\n", description))
-	sb.WriteString(fmt.Sprintf("// Author : %s\n", author))
+	sb.WriteString("config.lx project manifest\n")
+	sb.WriteString(fmt.Sprintf("%s\n", description))
+	sb.WriteString(fmt.Sprintf("Author: %s\n", author))
 	if github != "" {
-		sb.WriteString(fmt.Sprintf("// GitHub : %s\n", github))
+		sb.WriteString(fmt.Sprintf("GitHub: %s\n", github))
 	}
 	if url != "" {
-		sb.WriteString(fmt.Sprintf("// URL    : %s\n", url))
+		sb.WriteString(fmt.Sprintf("URL: %s\n", url))
 	}
-	sb.WriteString(fmt.Sprintf("// License: %s\n", license))
+	sb.WriteString(fmt.Sprintf("License: %s\n", license))
 	sb.WriteString("\n")
 
 	sb.WriteString("val project = {\n")
 
-	sb.WriteString("  // --- identity ---\n")
+	sb.WriteString("  identity:\n")
 	sb.WriteString(fmt.Sprintf("  name:        %q\n", m.Name))
 	sb.WriteString(fmt.Sprintf("  version:     %q\n", m.Version))
 	sb.WriteString(fmt.Sprintf("  description: %q\n", description))
@@ -741,15 +741,15 @@ func SaveManifest(p string, m *Manifest) error {
 	if github != "" {
 		sb.WriteString(fmt.Sprintf("  github:      %q\n", github))
 	} else {
-		sb.WriteString("  github:      \"\"  // e.g. \"https://github.com/you/project\"\n")
+		sb.WriteString("  github:      \"\"\n")
 	}
 	if url != "" {
 		sb.WriteString(fmt.Sprintf("  url:         %q\n", url))
 	} else {
-		sb.WriteString("  url:         \"\"  // project homepage or docs URL\n")
+		sb.WriteString("  url:         \"\"\n")
 	}
 
-	sb.WriteString("\n  // --- build ---\n")
+	sb.WriteString("\n  build:\n")
 	sb.WriteString(fmt.Sprintf("  main:        %q\n", m.Main))
 	sb.WriteString(fmt.Sprintf("  entry:       %q\n", m.Entry))
 	sb.WriteString(fmt.Sprintf("  output:      %q\n", output))
@@ -759,7 +759,7 @@ func SaveManifest(p string, m *Manifest) error {
 		sb.WriteString("  optimize:    false\n")
 	}
 
-	sb.WriteString("\n  // --- dependencies: \"pkg-name\": \"version\" ---\n")
+	sb.WriteString("\n  dependencies:\n")
 	sb.WriteString("  dependencies: {\n")
 	for name, ver := range m.Dependencies {
 		sb.WriteString(fmt.Sprintf("    %q: %q\n", name, ver))
@@ -767,7 +767,7 @@ func SaveManifest(p string, m *Manifest) error {
 	sb.WriteString("  }\n")
 	sb.WriteString("}\n\n")
 
-	sb.WriteString("// build() is called by `lunex build`. Must return the project object.\n")
+	sb.WriteString("build() is called by lunex build and must return the project object.\n")
 	sb.WriteString("fn build() {\n")
 	sb.WriteString("  project\n")
 	sb.WriteString("}\n")

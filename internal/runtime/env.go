@@ -1,5 +1,3 @@
-// (c) David Dev 2026. Licensed under the Mozilla Public License, Version 2.0.
-
 package runtime
 
 import (
@@ -15,7 +13,6 @@ type Environment struct {
 	escaped bool
 }
 
-// envPool recycles Environment objects to cut GC pressure in tight loops.
 var envPool = sync.Pool{
 	New: func() any {
 		return &Environment{
@@ -27,7 +24,7 @@ var envPool = sync.Pool{
 
 func NewEnvironment(parent *Environment) *Environment {
 	e := envPool.Get().(*Environment)
-	// Clear maps without re-allocating (keep capacity, reset length).
+
 	for k := range e.vars {
 		delete(e.vars, k)
 	}
@@ -38,10 +35,6 @@ func NewEnvironment(parent *Environment) *Environment {
 	return e
 }
 
-// ReleaseEnvironment returns an environment back to the pool.
-// Call this only when you are sure no live reference to the environment
-// (or its values) remains — typically at the end of a function call or
-// block scope. Forgetting to call it is safe but wastes memory.
 func ReleaseEnvironment(e *Environment) {
 	if e == nil {
 		return
@@ -59,8 +52,6 @@ func ReleaseEnvironment(e *Environment) {
 	envPool.Put(e)
 }
 
-// MarkEscaped marks this environment and all its ancestors as escaped
-// (not eligible for pooling). Call this whenever a closure captures env.
 func MarkEscaped(e *Environment) {
 	for cur := e; cur != nil; cur = cur.parent {
 		if cur.escaped {

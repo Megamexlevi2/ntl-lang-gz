@@ -1,6 +1,3 @@
-// Lunex — builder pattern
-// Fluent query builder using closure state and method chaining
-// Lunex v0.8.1 · github.com/Megamexlevi2/lunex-lang-gz
 
 val io = @import("std.io")
 

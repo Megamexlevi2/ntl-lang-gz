@@ -1,4 +1,3 @@
-// Example 16 — Event emitter pattern
 val io = @import("std.io")
 
 fn EventEmitter() {
@@ -62,14 +61,12 @@ fn main() {
     io.log(io.yellow("SYSTEM:"), "first startup event fired")
   })
 
-  // "startup" fires twice but once() handler only runs on first emit
   emitter.emit("startup", struct {})
   emitter.emit("startup", struct {})
 
   emitter.emit("login", makeUser("u1", "Alice"))
   emitter.emit("login", makeUser("u2", "Bob"))
 
-  // Remove login listeners
   emitter.off("login")
   emitter.emit("login", makeUser("u3", "Carol"))
   io.log("Carol login was silently ignored (listener removed)")

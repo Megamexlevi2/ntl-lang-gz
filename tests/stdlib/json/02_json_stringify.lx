@@ -1,5 +1,3 @@
-// Lunex — json — stringify
-// Pretty JSON output with spaces and indentation
 
 val io   = @import("std.io")
 val json = @import("std.json")

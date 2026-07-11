@@ -1,6 +1,3 @@
-// Lunex — regex — find all matches
-// Extract all non-overlapping matches with matchAll
-// Lunex v0.8.1 · github.com/Megamexlevi2/lunex-lang-gz
 
 val io    = @import("std.io")
 val regex = @import("std.regex")

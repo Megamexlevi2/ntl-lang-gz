@@ -1,15 +1,13 @@
 Lunex
 
-A fast, expressive scripting language for the backend.
+A fast, stable scripting language for backend development.
 
 Lunex is a statically scoped scripting language built in Go.
-It is designed to be simple to read, easy to use, and practical for everyday development without giving up important features. It also includes a useful built-in standard library with support for HTTP, file system access, cryptography, databases, WebSockets, and more.
+It is designed to be readable, practical, and consistent for everyday backend work. The language includes a built-in standard library with support for HTTP, file system access, cryptography, databases, WebSockets, and more.
 
 It runs on Linux, macOS, Windows, and Android (Termux).
 
-> Lunex is still evolving, so some things may change between versions
-
-Two ready-made modules written in Lunex are already included: lune-xml and lunex-cli.
+Two ready-made modules written in Lunex are included: lune-xml and lunex-cli.
 
 ---
 
@@ -26,9 +24,27 @@ Requires Go 1.23 or later.
 
 ```bash
 git clone https://github.com/Megamexlevi2/lunex-language
-cd lunex-lang-gz
+cd lunex-language
 ./build.sh
 ```
+
+#### Using Make
+
+```bash
+git clone https://github.com/Megamexlevi2/lunex-language
+cd lunex-language
+make
+```
+
+#### Using CMake
+
+```bash
+git clone https://github.com/Megamexlevi2/lunex-language
+cd lunex-language
+cmake -B build
+cmake --build build
+```
+
 
 ---
 
@@ -210,11 +226,11 @@ fn process(path) {
 ## CLI Reference
 
 ```
-lunex run <file> [--emit ast|ir]   run a .lx, .nc, or .nax file
+lunex run <file> [--emit ast|ir]   run a .lx source file or a .nax archive
 lunex -e "<code>"                  run a code snippet directly
-lunex build [file] [-o output]     compile to .nc bytecode
+lunex build [file] [-o output]     compile source or create a .nax archive
 lunex check <file>                 check for errors without running
-lunex dis <file.nc>                disassemble bytecode
+lunex dis <file.nax>                inspect a compiled archive
 lunex bench <file>                 run with timing output
 lunex init [name]                  create a new project
 lunex start                        run project entry from config.lx

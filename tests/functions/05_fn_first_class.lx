@@ -1,6 +1,3 @@
-// Lunex — first-class functions
-// Functions stored in variables, arrays, and objects
-// Lunex v0.8.1 · github.com/Megamexlevi2/lunex-lang-gz
 
 val io = @import("std.io")
 fn apply(f, x)    { f(x) }
