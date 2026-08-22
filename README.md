@@ -301,7 +301,7 @@ val pkg = @fimport("./dist/math.nax")
 Import an external library installed by Lunex:
 
 ```lx
-val xml = @import("lune-xml")   // after: lunex add https://github.com/Megamexlevi2/lune-xml
+val xml = @import("lune-xml")   // after: https://github.com/Megamexlevi2/lunex-language/lune-xml
 ```
 
 ---
