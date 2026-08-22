@@ -1,0 +1,16 @@
+
+val io = @import("std.io")
+fn grade(s) {
+  if s >= 90 { "A" } else if s >= 80 { "B" }
+  else if s >= 70 { "C" } else if s >= 60 { "D" } else { "F" }
+}
+fn quadrant(x, y) {
+  if x > 0 { if y > 0 { "Q1" } else { "Q4" } }
+  else { if y > 0 { "Q2" } else { "Q3" } }
+}
+fn main() {
+  each s in [95, 82, 71, 55] { io.log(s, "→", grade(s)) }
+  io.log("(1,1):", quadrant(1,1))
+  io.log("(-1,1):", quadrant(-1,1))
+  io.log("PASS if_nested")
+}

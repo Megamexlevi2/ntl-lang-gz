@@ -1,0 +1,11 @@
+
+val io   = @import("std.io")
+val json = @import("std.json")
+
+fn main() {
+  val data = { a: 1, b: [2, 3], c: { ok: true } }
+  val text = json.compact(data)
+  io.log("compact:", text)
+  io.log("has_spaces:", text.includes(" "))
+  io.log("PASS json_compact")
+}

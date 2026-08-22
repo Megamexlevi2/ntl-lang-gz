@@ -1,0 +1,27 @@
+val io       = @import("std.io")
+val datetime = @import("std.datetime")
+val math     = @import("std.math")
+
+fn main() {
+  val now = datetime.now()
+  io.log("ISO:       ", now.iso)
+  io.log("Year:      ", now.year)
+  io.log("Month:     ", now.month)
+  io.log("Day:       ", now.day)
+  io.log("Unix:      ", now.unix)
+  io.log("Timestamp: ", now.timestamp)
+
+  io.log("Formatted: ", datetime.format(now, "YYYY-MM-DD"))
+
+  val birthday = datetime.parse("1990-07-04")
+  io.log("Parsed year:", birthday.year)
+  io.log("Parsed month:", birthday.month)
+  io.log("Parsed day:", birthday.day)
+
+  val epoch = datetime.fromTimestamp(0)
+  io.log("Unix epoch:", epoch.iso)
+
+  val diff = datetime.diff(now, birthday)
+  val days = math.floor(diff / 86400000)
+  io.log("Days since birthday:", days)
+}

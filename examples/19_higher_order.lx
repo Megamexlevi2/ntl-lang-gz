@@ -1,0 +1,63 @@
+val io = @import("std.io")
+
+fn multiplier(n) {
+  fn(x) { x * n }
+}
+
+fn adder(n) {
+  fn(x) { x + n }
+}
+
+fn compose(f, g) {
+  fn(x) { f(g(x)) }
+}
+
+fn memoize(f) {
+  val cache = struct {}
+  fn(x) {
+    val key = str(x)
+    if cache[key] {
+      cache[key]
+    } else {
+      val result = f(x)
+      cache[key] = result
+      result
+    }
+  }
+}
+
+fn main() {
+  val double  = multiplier(2)
+  val triple  = multiplier(3)
+  val addTen  = adder(10)
+
+  io.log("double(5):", double(5))
+  io.log("triple(5):", triple(5))
+  io.log("addTen(5):", addTen(5))
+
+  val doubleThenAdd10 = compose(addTen, double)
+  io.log("doubleThenAdd10(3):", doubleThenAdd10(3))
+
+  val nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  io.log("evens:    ", nums.filter(fn(x) { x % 2 == 0 }))
+  io.log("squares:  ", nums.map(fn(x) { x * x }))
+  io.log("sum:      ", nums.reduce(fn(acc, x) { acc + x }, 0))
+  io.log("product:  ", nums.reduce(fn(acc, x) { acc * x }, 1))
+
+  val slowSquare = memoize(fn(x) {
+    var i = 0
+    while i < 1000 { i = i + 1 }
+    x * x
+  })
+  io.log("memoize first call  slowSquare(7):", slowSquare(7))
+  io.log("memoize second call slowSquare(7):", slowSquare(7))
+
+  fn applyAll(fns, value) {
+    each f in fns {
+      io.log("  result:", f(value))
+    }
+  }
+
+  io.log("Applying [double, triple, addTen] to 4:")
+  applyAll([double, triple, addTen], 4)
+}

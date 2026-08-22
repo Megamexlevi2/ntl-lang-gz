@@ -1,0 +1,13 @@
+
+val io = @import("std.io"); val fs = @import("std.fs")
+fn main() {
+  val path = "/tmp/lunex_test_lines.txt"
+  fs.writeFile(path, "alpha
+beta
+gamma
+delta")
+  val lines = fs.readLines(path)
+  each line in lines { io.log(" -", line) }
+  fs.delete(path)
+  io.log("PASS fs_readlines")
+}

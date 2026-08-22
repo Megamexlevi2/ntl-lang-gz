@@ -1,0 +1,13 @@
+
+val io = @import("std.io")
+fn main() {
+  val name    = "Lunex"
+  val version = 0.6
+  val active  = true
+  val nothing = null
+  io.log("name:", name)
+  io.log("version:", version)
+  io.log("active:", active)
+  io.log("nothing:", nothing)
+  io.log("PASS val_basic")
+}

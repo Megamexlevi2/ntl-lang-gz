@@ -1,0 +1,41 @@
+val io  = @import("std.io")
+val cli = @fimport("../main.lx")
+
+var _passed = 0
+var _failed = 0
+
+fn _check(name, actual, expected) {
+  if actual == expected {
+    _passed = _passed + 1
+    io.log(io.green("  ok   "), name)
+  } else {
+    _failed = _failed + 1
+    io.log(io.red("  FAIL "), name)
+    io.log("         expected:", expected)
+    io.log("         actual:  ", actual)
+  }
+}
+
+fn _resetDemo() {
+  cli.reset()
+  cli.name("demo")
+  cli.version("1.2.3")
+  cli.description("Demo CLI")
+}
+
+fn run() {
+  io.log(io.bold("--- alias tests ---"))
+  _resetDemo()
+
+  cli.command("hello", fn(args) {
+    "ok"
+  }, "Say hello")
+  _check("alias add", cli.alias("hello", "hi"), true)
+  _check("alias visible", cli.has("hi"), true)
+
+  val same = cli.run(["demo", "hi"])
+  _check("alias dispatch works", same, "ok")
+
+  io.log(io.green("alias tests passed"))
+  _failed == 0
+}

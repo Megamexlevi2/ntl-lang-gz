@@ -1,0 +1,17 @@
+
+val io   = @import("std.io")
+val math = @import("std.math")
+fn main() {
+  val a = 10
+  val b = 3
+  io.log("a + b =", a + b)
+  io.log("a - b =", a - b)
+  io.log("a * b =", a * b)
+  io.log("a / b =", a / b)
+  io.log("a % b =", a % b)
+  io.log("pi:", math.PI)
+  io.log("sqrt(16):", math.sqrt(16))
+  io.log("pow(2,8):", math.pow(2, 8))
+  io.log("abs(-42):", math.abs(-42))
+  io.log("PASS number_operations")
+}

@@ -1,0 +1,17 @@
+
+val io    = @import("std.io")
+val utils = @import("std.utils")
+fn pipe(fns) {
+  fn(input) { fns.reduce(fn(acc, f) { f(acc) }, input) }
+}
+fn main() {
+  val process = pipe([
+    fn(s) { s.trim() }
+    fn(s) { s.toLowerCase() }
+    fn(s) { utils.slugify(s) }
+  ])
+  each s in ["  Hello World  ", "  Lunex Lang  ", "  Fast Simple  "] {
+    io.log(s, "→", process(s))
+  }
+  io.log("PASS pipeline")
+}

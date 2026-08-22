@@ -1,0 +1,40 @@
+val io  = @import("std.io")
+val xml = @fimport("../main.lx")
+
+fn run() {
+  io.log(io.bold("--- parser tests ---"))
+
+  val doc1 = xml.parse("<root><name>Lunex</name><version>2.0</version></root>")
+  io.log("tag:", doc1.tag)
+  io.log("children:", doc1.childCount())
+  val nameNode = xml.selectFirst(doc1, "name")
+  io.log("name text:", xml.text(nameNode))
+
+  val doc2 = xml.parse("<?xml version=\"1.0\" encoding=\"UTF-8\"?><catalog><book id=\"b1\"><title>Go</title></book><book id=\"b2\"><title>Rust</title></book></catalog>")
+  io.log("catalog tag:", doc2.tag)
+  val books = xml.selectAll(doc2, "book")
+  io.log("books found:", books.length)
+  each b in books {
+    val t = xml.selectFirst(b, "title")
+    io.log("  book id=" + xml.attr(b, "id") + " title=" + xml.text(t))
+  }
+
+  val doc3 = xml.parse("<config><db host=\"localhost\" port=\"5432\" /><cache ttl=\"60\" /></config>")
+  io.log("self-close children:", doc3.childCount())
+  io.log("db host:", xml.attr(xml.selectFirst(doc3, "db"), "host"))
+  io.log("cache ttl:", xml.attr(xml.selectFirst(doc3, "cache"), "ttl"))
+
+  val orig   = xml.createElementWithAttrs("user", { id: "u1", role: "admin" })
+  xml.appendChild(orig, xml.createTextElement("name", "Alice"))
+  val src    = xml.build(orig)
+  val parsed = xml.parse(src)
+  io.log("round-trip tag:", parsed.tag)
+  io.log("round-trip id:", xml.attr(parsed, "id"))
+  io.log("round-trip name:", xml.text(xml.selectFirst(parsed, "name")))
+
+  val deep = xml.parse("<a><b><c><d>deep text</d></c></b></a>")
+  val d    = xml.selectPath(deep, "a.b.c.d")
+  io.log("deep text:", xml.text(d))
+
+  io.log(io.green("parser tests passed"))
+}

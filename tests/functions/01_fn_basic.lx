@@ -1,0 +1,15 @@
+
+val io = @import("std.io")
+fn add(a, b)      { a + b }
+fn multiply(a, b) { a * b }
+fn greet(name)    { "Hello, " + name + "!" }
+fn clamp(v, lo, hi) {
+  if v < lo { lo } else if v > hi { hi } else { v }
+}
+fn main() {
+  io.log("add(3,4):", add(3, 4))
+  io.log("multiply(6,7):", multiply(6, 7))
+  io.log("greet:", greet("Lunex"))
+  io.log("clamp(15,0,10):", clamp(15, 0, 10))
+  io.log("PASS fn_basic")
+}

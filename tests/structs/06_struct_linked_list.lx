@@ -1,0 +1,32 @@
+
+val io = @import("std.io")
+fn Node(value, next) { struct { value = value; next = next } }
+fn LinkedList() {
+  var head = null
+  var size = 0
+  struct {
+    fn prepend(v) {
+      head = Node(v, head)
+      size = size + 1
+    }
+    fn toArray() {
+      var result = []
+      var cur    = head
+      while cur != null {
+        result.push(cur.value)
+        cur = cur.next
+      }
+      result
+    }
+    fn len() { size }
+  }
+}
+fn main() {
+  val list = LinkedList()
+  list.prepend(3)
+  list.prepend(2)
+  list.prepend(1)
+  io.log("list:", list.toArray())
+  io.log("len:", list.len())
+  io.log("PASS struct_linked_list")
+}

@@ -1,0 +1,10 @@
+
+val io = @import("std.io"); val utils = @import("std.utils")
+fn main() {
+  val user  = { name: "Alice", age: 30, role: "admin" }
+  val extra = { score: 100, verified: true }
+  io.log("keys:", utils.keys(user))
+  io.log("values:", utils.values(user))
+  io.log("merged:", utils.merge(user, extra))
+  io.log("PASS utils_object")
+}

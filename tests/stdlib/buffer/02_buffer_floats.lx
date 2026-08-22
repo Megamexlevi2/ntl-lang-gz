@@ -1,0 +1,10 @@
+val io = @import("std.io"); val buffer = @import("std.buffer")
+fn main() {
+  val buf = buffer.alloc(12)
+  buf.writeF32(0, 1.5, "be")
+  buf.writeF64(4, 3.14159, "be")
+
+  io.log("readF32:", buf.readF32(0, "be"))
+  io.log("readF64:", buf.readF64(4, "be"))
+  io.log("PASS buffer_floats")
+}

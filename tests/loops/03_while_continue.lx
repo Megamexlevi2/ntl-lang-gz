@@ -1,0 +1,12 @@
+
+val io = @import("std.io")
+fn main() {
+  io.log("odd 1-10:")
+  var i = 0
+  while i < 10 {
+    i = i + 1
+    if i % 2 == 0 { continue }
+    io.log(" ", i)
+  }
+  io.log("PASS while_continue")
+}

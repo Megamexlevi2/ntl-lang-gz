@@ -1,0 +1,7 @@
+val math = @fimport("./math.lx")
+val io = @import("std.io")
+
+fn main() {
+  io.log("Sum:", math.add(10, 5))
+  io.log("Product:", math.mul(4, 3))
+}

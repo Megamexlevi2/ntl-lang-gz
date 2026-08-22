@@ -1,0 +1,31 @@
+val io = @import("std.io")
+
+fn main() {
+  val name   = "Lunex"
+  val age    = 30
+  val height = 1.75
+  val active = true
+
+  io.log("name:  ", name)
+  io.log("age:   ", age)
+  io.log("height:", height)
+  io.log("active:", active)
+
+  var counter = 0
+  counter = counter + 1
+  io.log("counter:", counter)
+
+  val user = struct {
+    name = "Alice"
+    role = "admin"
+  }
+  val { name: uname, role } = user
+  io.log("user:", uname, "role:", role)
+
+  val items = ["first", "second", "third"]
+  val [first, second] = items
+  io.log("first:", first, "second:", second)
+
+  val msg = `Hello, ${name}! You are ${age} years old.`
+  io.log(msg)
+}

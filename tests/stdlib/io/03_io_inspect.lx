@@ -1,0 +1,9 @@
+
+val io = @import("std.io")
+fn main() {
+  val user = { name: "Alice", age: 30, hobbies: ["reading","coding"] }
+  io.log("user:", user)
+  val matrix = [[1,2,3],[4,5,6],[7,8,9]]
+  io.log("matrix:", matrix)
+  io.log("PASS io_inspect")
+}

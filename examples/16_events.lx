@@ -1,0 +1,73 @@
+val io = @import("std.io")
+
+fn EventEmitter() {
+  val listeners = struct {}
+
+  struct {
+    fn on(event, handler) {
+      if !listeners[event] {
+        listeners[event] = []
+      }
+      listeners[event].push(handler)
+    }
+
+    fn once(event, handler) {
+      var fired = false
+      val wrapped = fn(data) {
+        if !fired {
+          fired = true
+          handler(data)
+        }
+      }
+      self.on(event, wrapped)
+    }
+
+    fn emit(event, data) {
+      val handlers = listeners[event]
+      if handlers {
+        each h in handlers {
+          h(data)
+        }
+      }
+    }
+
+    fn off(event) {
+      listeners[event] = null
+    }
+  }
+}
+
+fn makeUser(id, name) {
+  struct {
+    id   = id
+    name = name
+  }
+}
+
+fn main() {
+  io.log(io.bold("=== Event Emitter Demo ==="))
+
+  val emitter = EventEmitter()
+
+  emitter.on("login", fn(user) {
+    io.log(io.green("USER LOGIN:"), user.name)
+  })
+
+  emitter.on("login", fn(user) {
+    io.log(io.cyan("AUDIT:"), "login recorded for", user.id)
+  })
+
+  emitter.once("startup", fn(data) {
+    io.log(io.yellow("SYSTEM:"), "first startup event fired")
+  })
+
+  emitter.emit("startup", struct {})
+  emitter.emit("startup", struct {})
+
+  emitter.emit("login", makeUser("u1", "Alice"))
+  emitter.emit("login", makeUser("u2", "Bob"))
+
+  emitter.off("login")
+  emitter.emit("login", makeUser("u3", "Carol"))
+  io.log("Carol login was silently ignored (listener removed)")
+}

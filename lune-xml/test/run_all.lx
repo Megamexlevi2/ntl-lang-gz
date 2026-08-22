@@ -1,0 +1,34 @@
+val io         = @import("std.io")
+val tNode      = @fimport("./test_node.lx")
+val tBuilder   = @fimport("./test_builder.lx")
+val tParser    = @fimport("./test_parser.lx")
+val tQuery     = @fimport("./test_query.lx")
+val tTransform = @fimport("./test_transform.lx")
+val tValidate  = @fimport("./test_validate.lx")
+val tEntities  = @fimport("./test_entities.lx")
+
+fn main() {
+  io.log(io.bold(io.cyan("================================")))
+  io.log(io.bold(io.cyan("   lunex-xml test suite")))
+  io.log(io.bold(io.cyan("================================")))
+  io.log("")
+  tNode.run()
+  io.log("")
+  tBuilder.run()
+  io.log("")
+  tParser.run()
+  io.log("")
+  tQuery.run()
+  io.log("")
+  tTransform.run()
+  io.log("")
+  tValidate.run()
+  io.log("")
+  val entitiesOk = tEntities.run()
+  io.log("")
+  if entitiesOk {
+    io.log(io.bold(io.green("✓ all 7 suites passed.")))
+  } else {
+    io.log(io.bold(io.red("✗ entity & robustness suite reported failures — see above.")))
+  }
+}

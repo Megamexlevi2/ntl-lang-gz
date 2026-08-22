@@ -1,0 +1,17 @@
+val io = @import("std.io"); val buffer = @import("std.buffer")
+fn main() {
+  val buf = buffer.alloc(16)
+  buf.writeU32(0, 4021, "be")
+  buf.writeI16(4, -12, "be")
+  buf.writeU8(6, 255)
+  buf.writeI8(7, -1)
+  buf.writeU64(8, 123456789, "le")
+
+  io.log("readU32:", buf.readU32(0, "be"))
+  io.log("readI16:", buf.readI16(4, "be"))
+  io.log("readU8:", buf.readU8(6))
+  io.log("readI8:", buf.readI8(7))
+  io.log("readU64:", buf.readU64(8, "le"))
+  io.log("length:", buf.length)
+  io.log("PASS buffer_rw")
+}

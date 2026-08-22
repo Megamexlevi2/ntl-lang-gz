@@ -1,0 +1,15 @@
+
+val io = @import("std.io")
+fn main() {
+  val greeting = "Hello"
+  val name     = "World"
+  val full     = greeting + ", " + name + "!"
+  io.log(full)
+  val lang = "Lunex"
+  io.log(`Language: ${lang}`)
+  io.log("upper:", "lunex".toUpperCase())
+  io.log("lower:", "LUNEX".toLowerCase())
+  io.log("trimmed:", "  spaces  ".trim())
+  io.log("includes:", "hello world".includes("world"))
+  io.log("PASS string_operations")
+}

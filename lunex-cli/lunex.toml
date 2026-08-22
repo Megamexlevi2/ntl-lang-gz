@@ -1,0 +1,10 @@
+[project]
+name = "lunex-cli"
+version = "1.0.0"
+description = "Command-line helper module for Lunex applications: commands, aliases, parsing, and help rendering"
+license = "Apache-2.0"
+repository = "https://github.com/Megamexlevi2/lunex-language"
+entry = "main.lx"
+
+[lunex]
+min_version = "0.9.2"

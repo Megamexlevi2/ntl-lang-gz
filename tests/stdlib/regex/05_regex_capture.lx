@@ -1,0 +1,12 @@
+
+val io    = @import("std.io")
+val regex = @import("std.regex")
+fn main() {
+  val date  = "2026-06-13"
+  val parts = regex.groups(date, "(\\d{4})-(\\d{2})-(\\d{2})")
+  io.log("year:", parts[0], "month:", parts[1], "day:", parts[2])
+  val email = "user@example.com"
+  val ep    = regex.groups(email, "([^@]+)@(.+)")
+  io.log("user:", ep[0], "domain:", ep[1])
+  io.log("PASS regex_capture")
+}

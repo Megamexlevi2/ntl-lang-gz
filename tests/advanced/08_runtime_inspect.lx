@@ -1,0 +1,11 @@
+
+val io      = @import("std.io")
+val runtime = @import("runtime")
+fn main() {
+  io.log("version:", runtime.version())
+  io.log("globals:", runtime.globals())
+  runtime.setGlobal("LUNEX_TEST_KEY", "lunex_value")
+  io.log("has:", runtime.hasGlobal("LUNEX_TEST_KEY"))
+  io.log("get:", runtime.getGlobal("LUNEX_TEST_KEY"))
+  io.log("PASS runtime_inspect")
+}

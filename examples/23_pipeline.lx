@@ -1,0 +1,85 @@
+val io   = @import("std.io")
+val math = @import("std.math")
+
+fn Pipeline(data) {
+  struct {
+    fn map(f) {
+      Pipeline(data.map(f))
+    }
+
+    fn filter(f) {
+      Pipeline(data.filter(f))
+    }
+
+    fn take(n) {
+      var result = []
+      var i = 0
+      each item in data {
+        if i < n {
+          result.push(item)
+          i = i + 1
+        }
+      }
+      Pipeline(result)
+    }
+
+    fn sort() {
+      var arr = data.map(fn(x) { x })
+      val len = arr.length
+      var i = 0
+      while i < len {
+        var j = 0
+        while j < len - i - 1 {
+          if arr[j] > arr[j + 1] {
+            val tmp  = arr[j]
+            arr[j]   = arr[j + 1]
+            arr[j + 1] = tmp
+          }
+          j = j + 1
+        }
+        i = i + 1
+      }
+      Pipeline(arr)
+    }
+
+    fn collect() { data }
+
+    fn each(f) {
+      each item in data {
+        f(item)
+      }
+    }
+
+    fn reduce(f, init) {
+      data.reduce(f, init)
+    }
+  }
+}
+
+fn main() {
+  val numbers = [5, 3, 8, 1, 9, 2, 7, 4, 6, 10]
+
+  val result = Pipeline(numbers)
+    .filter(fn(x) { x % 2 == 0 })
+    .map(fn(x) { x * x })
+    .sort()
+    .collect()
+
+  io.log("even squares sorted:", result)
+
+  val words = ["banana", "apple", "cherry", "date", "elderberry", "fig"]
+
+  val shortWords = Pipeline(words)
+    .filter(fn(w) { w.length <= 5 })
+    .map(fn(w) { w.toUpperCase() })
+    .sort()
+    .collect()
+
+  io.log("short words (<=5) uppercased:", shortWords)
+
+  val total = Pipeline(numbers)
+    .filter(fn(x) { x > 5 })
+    .reduce(fn(acc, x) { acc + x }, 0)
+
+  io.log("sum of numbers > 5:", total)
+}

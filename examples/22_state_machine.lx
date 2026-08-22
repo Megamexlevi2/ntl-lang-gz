@@ -1,0 +1,71 @@
+val io = @import("std.io")
+
+fn StateMachine(initial) {
+  var state       = initial
+  val transitions = struct {}
+  val actions     = struct {}
+
+  struct {
+    fn addTransition(from, event, to) {
+      val key = from + ":" + event
+      transitions[key] = to
+    }
+
+    fn addAction(stateName, handler) {
+      actions[stateName] = handler
+    }
+
+    fn send(event) {
+      val key  = state + ":" + event
+      val next = transitions[key]
+      if next {
+        io.log(io.cyan("transition:"), state, "->", io.green(next), "on", io.yellow(event))
+        state = next
+        val handler = actions[state]
+        if handler {
+          handler()
+        }
+      } else {
+        io.warn("no transition from '" + state + "' on event '" + event + "'")
+      }
+    }
+
+    fn current() { state }
+  }
+}
+
+fn main() {
+  io.log(io.bold("=== Traffic Light State Machine ==="))
+
+  val light = StateMachine("red")
+
+  light.addTransition("red",    "go",   "green")
+  light.addTransition("green",  "slow", "yellow")
+  light.addTransition("yellow", "stop", "red")
+
+  light.addAction("red",    fn() { io.log(io.red("   STOP")) })
+  light.addAction("green",  fn() { io.log(io.green("   GO")) })
+  light.addAction("yellow", fn() { io.log(io.yellow("   SLOW DOWN")) })
+
+  io.log("initial state:", light.current())
+  light.send("go")
+  light.send("slow")
+  light.send("stop")
+  light.send("go")
+  light.send("stop")
+
+  io.log("")
+  io.log(io.bold("=== Order State Machine ==="))
+
+  val order = StateMachine("pending")
+
+  order.addTransition("pending",   "pay",     "paid")
+  order.addTransition("paid",      "ship",    "shipped")
+  order.addTransition("shipped",   "deliver", "delivered")
+  order.addTransition("delivered", "refund",  "refunded")
+
+  order.send("pay")
+  order.send("ship")
+  order.send("deliver")
+  io.log("final state:", order.current())
+}

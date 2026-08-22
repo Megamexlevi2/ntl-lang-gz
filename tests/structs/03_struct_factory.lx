@@ -1,0 +1,23 @@
+
+val io   = @import("std.io")
+val math = @import("std.math")
+fn Vec2(x, y) {
+  struct {
+    x = x
+    y = y
+    fn add(o)   { Vec2(this.x + o.x, this.y + o.y) }
+    fn scale(s) { Vec2(this.x * s, this.y * s) }
+    fn length() { math.sqrt(this.x * this.x + this.y * this.y) }
+    fn toStr()  { "(" + str(this.x) + ", " + str(this.y) + ")" }
+  }
+}
+fn main() {
+  val v1 = Vec2(3, 4)
+  val v2 = Vec2(1, 2)
+  io.log("v1:", v1.toStr())
+  io.log("v2:", v2.toStr())
+  io.log("v1+v2:", v1.add(v2).toStr())
+  io.log("|v1|:", v1.length())
+  io.log("v1*2:", v1.scale(2).toStr())
+  io.log("PASS struct_factory")
+}

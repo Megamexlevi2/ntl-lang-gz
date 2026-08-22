@@ -1,0 +1,12 @@
+
+val io = @import("std.io")
+val fs = @import("std.fs")
+fn main() {
+  val path = "/tmp/lunex_test_ex.txt"
+  io.log("before:", fs.exists(path))
+  fs.writeFile(path, "hello")
+  io.log("after create:", fs.exists(path))
+  fs.delete(path)
+  io.log("after delete:", fs.exists(path))
+  io.log("PASS fs_exists")
+}

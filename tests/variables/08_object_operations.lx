@@ -1,0 +1,11 @@
+
+val io = @import("std.io")
+fn main() {
+  val user = { name: "Alice", age: 30, active: true }
+  io.log("name:", user.name)
+  io.log("age:", user.age)
+  val address = { city: "London", country: "UK" }
+  val profile = { user: user, address: address }
+  io.log("city:", profile.address.city)
+  io.log("PASS object_operations")
+}

@@ -1,0 +1,21 @@
+val project = {
+  name:        "lune-xml"
+  version:     "1.0"
+  description: "A Lunex project"
+  author:      "David Dev"
+  license:     "Apache-2.0"
+  github:      "https://github.com/Megamexlevi2/lunex-language"
+  url:         ""
+
+  main:        "main.lx"
+  entry:       "main.lx"
+  output:      "dist"
+  optimize:    true
+
+  dependencies: {
+  }
+}
+
+fn build() {
+  project
+}

@@ -1,0 +1,52 @@
+val http = @import("std.http")
+val io   = @import("std.io")
+
+val port = 3000
+
+fn makeUser(id, name, role) {
+  struct {
+    id   = id
+    name = name
+    role = role
+  }
+}
+
+val users = [
+  makeUser(1, "Alice", "admin"),
+  makeUser(2, "Bob",   "user"),
+  makeUser(3, "Carol", "user")
+]
+
+val server = http.createServer(fn(req, res) {
+  if req.method == "GET" and req.url == "/" {
+    http.json(res, struct {
+      message = "Lunex REST Server"
+      version = "1.0"
+    }, 200)
+
+  } else if req.method == "GET" and req.url == "/users" {
+    http.json(res, struct {
+      users = users
+      total = len(users)
+    }, 200)
+
+  } else if req.method == "GET" and req.url == "/health" {
+    http.json(res, struct {
+      status = "ok"
+    }, 200)
+
+  } else {
+    http.json(res, struct {
+      error = "not found"
+    }, 404)
+  }
+})
+
+fn main() {
+  http.listen(server, port, "0.0.0.0", fn() {
+    io.log(io.green("Server running on http://localhost:" + str(port)))
+    io.log("  GET /         -> server info")
+    io.log("  GET /users    -> list users")
+    io.log("  GET /health   -> health check")
+  })
+}

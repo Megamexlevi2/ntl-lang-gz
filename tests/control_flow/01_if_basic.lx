@@ -1,0 +1,13 @@
+
+val io = @import("std.io")
+fn classify(n) {
+  if n > 0 { "positive" } else if n < 0 { "negative" } else { "zero" }
+}
+fn main() {
+  io.log(classify(5))
+  io.log(classify(-3))
+  io.log(classify(0))
+  val x = 42
+  if x == 42 { io.log("the answer") } else { io.log("not the answer") }
+  io.log("PASS if_basic")
+}

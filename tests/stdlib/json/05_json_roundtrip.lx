@@ -1,0 +1,19 @@
+
+val io   = @import("std.io")
+val json = @import("std.json")
+
+fn main() {
+  val original = {
+    user: "neo",
+    score: 42,
+    flags: [true, false, true]
+  }
+
+  val text = json.stringify(original)
+  val parsed = json.parse(text)
+
+  io.log("user:", parsed.user)
+  io.log("score:", parsed.score)
+  io.log("flag3:", parsed.flags[2])
+  io.log("PASS json_roundtrip")
+}

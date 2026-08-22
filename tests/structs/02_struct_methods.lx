@@ -1,0 +1,27 @@
+
+val io = @import("std.io")
+fn Stack() {
+  var items = []
+  struct {
+    fn push(v)   { items.push(v) }
+    fn pop() {
+      val last = items[items.length - 1]
+      items = items.slice(0, items.length - 1)
+      last
+    }
+    fn peek()    { items[items.length - 1] }
+    fn size()    { items.length }
+    fn isEmpty() { items.length == 0 }
+  }
+}
+fn main() {
+  val s = Stack()
+  io.log("empty:", s.isEmpty())
+  s.push(1)
+  s.push(2)
+  s.push(3)
+  io.log("size:", s.size())
+  io.log("peek:", s.peek())
+  io.log("pop:", s.pop())
+  io.log("PASS struct_methods")
+}

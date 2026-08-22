@@ -1,0 +1,51 @@
+
+fn XmlNode(tag_, text_) {
+  val self = struct {
+    tag       = tag_
+    attrs     = {}
+    attrOrder = []
+    children  = []
+    text      = text_
+    cdata     = false
+
+    fn setAttribute(k, v) {
+      unless this.attrs[k] != null {
+        this.attrOrder.push(k)
+      }
+      this.attrs[k] = v
+    }
+    fn getAttribute(k)     { this.attrs[k] }
+    fn hasAttr(k)          { this.attrs[k] != null }
+    fn attributeNames()    { this.attrOrder }
+
+    fn appendChild(child) { this.children.push(child) }
+    fn hasChildren()      { this.children.length > 0 }
+    fn childAt(i)         { this.children[i] }
+    fn childCount()       { this.children.length }
+
+    fn setText(t)  { this.text = t }
+    fn getText()   { this.text }
+
+    fn setCData(flag) { this.cdata = flag }
+    fn isCData()      { this.cdata }
+
+    fn getTag()    { this.tag }
+
+    fn toString()  { `XmlNode<${this.tag}>` }
+  }
+  self
+}
+
+fn newNode(tag) {
+  XmlNode(tag, "")
+}
+
+fn newTextNode(tag, text) {
+  XmlNode(tag, text)
+}
+
+fn newCDataNode(tag, text) {
+  val n = XmlNode(tag, text)
+  n.setCData(true)
+  n
+}

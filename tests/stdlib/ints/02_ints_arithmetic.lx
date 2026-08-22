@@ -1,0 +1,10 @@
+val io = @import("std.io"); val ints = @import("std.ints")
+fn main() {
+  io.log("addU8(250, 10):", ints.addU8(250, 10))
+  io.log("subI8(-128, 1):", ints.subI8(-128, 1))
+  io.log("mulU32(200000, 200000):", ints.mulU32(200000, 200000))
+  io.log("addU32(4294967295, 1):", ints.addU32(4294967295, 1))
+  io.log("subU16(0, 1):", ints.subU16(0, 1))
+  io.log("mulI16(300, 300):", ints.mulI16(300, 300))
+  io.log("PASS ints_arithmetic")
+}

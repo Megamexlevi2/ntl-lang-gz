@@ -1,0 +1,15 @@
+
+val io = @import("std.io")
+fn main() {
+  var x = 1
+  x = x + 1
+  x = x * 3
+  io.log("x:", x)
+  var msg = "hello"
+  msg = msg + " world"
+  io.log("msg:", msg)
+  var flag = false
+  flag = true
+  io.log("flag:", flag)
+  io.log("PASS var_mutation")
+}

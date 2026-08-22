@@ -1,0 +1,78 @@
+val io   = @import("std.io")
+val math = @import("std.math")
+
+fn Shape(color) {
+  val self = struct {
+    color = color
+    fn area()      { 0.0 }
+    fn perimeter() { 0.0 }
+    fn describe() {
+      "Shape(" + self.color + ") area=" + str(self.area()) +
+      " perimeter=" + str(self.perimeter())
+    }
+  }
+  self
+}
+
+fn Circle(color, radius) {
+  val base = Shape(color)
+  struct {
+    color  = base.color
+    radius = radius
+    fn area()      { math.PI * radius * radius }
+    fn perimeter() { 2.0 * math.PI * radius }
+    fn describe() {
+      "Circle(" + color + " r=" + str(radius) + ")" +
+      " area=" + str(self.area())
+    }
+  }
+}
+
+fn Rectangle(color, width, height) {
+  val base = Shape(color)
+  struct {
+    color  = base.color
+    width  = width
+    height = height
+    fn area()      { width * height }
+    fn perimeter() { 2.0 * (width + height) }
+    fn describe() {
+      "Rect(" + color + " " + str(width) + "x" + str(height) + ")" +
+      " area=" + str(self.area())
+    }
+  }
+}
+
+fn Triangle(color, a, b, c) {
+  val s = (a + b + c) / 2.0
+  struct {
+    color = color
+    a = a
+    b = b
+    c = c
+    fn area()      { math.sqrt(s * (s - a) * (s - b) * (s - c)) }
+    fn perimeter() { a + b + c }
+    fn describe() {
+      "Triangle(" + color + " " + str(a) + "," + str(b) + "," + str(c) + ")" +
+      " area=" + str(self.area())
+    }
+  }
+}
+
+fn main() {
+  val shapes = [
+    Circle("red", 5.0),
+    Rectangle("blue", 4.0, 6.0),
+    Circle("green", 3.0),
+    Triangle("purple", 3.0, 4.0, 5.0)
+  ]
+
+  each s in shapes {
+    io.log(s.describe())
+  }
+
+  io.log("")
+
+  val total = shapes.reduce(fn(acc, s) { acc + s.area() }, 0.0)
+  io.log("Total area:", total)
+}

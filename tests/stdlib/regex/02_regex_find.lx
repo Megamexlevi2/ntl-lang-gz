@@ -1,0 +1,12 @@
+
+val io    = @import("std.io")
+val regex = @import("std.regex")
+fn main() {
+  val text = "order #1234 and order #5678"
+  io.log("orders:", regex.matchAll(text, "#\\d+"))
+  val emails = "contact alice@example.com or bob@test.org"
+  io.log("emails:", regex.matchAll(emails, "[\\w.]+@[\\w.]+"))
+  val numbers = "pi=3.14 e=2.71 phi=1.618"
+  io.log("numbers:", regex.extractNumbers(numbers))
+  io.log("PASS regex_find")
+}

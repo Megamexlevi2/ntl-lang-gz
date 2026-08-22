@@ -1,0 +1,25 @@
+
+val io = @import("std.io")
+fn makeAdder(n) { fn(x) { x + n } }
+fn makeCounter() {
+  var count = 0
+  struct {
+    fn inc()   { count = count + 1 }
+    fn reset() { count = 0 }
+    fn get()   { count }
+  }
+}
+fn main() {
+  val add5  = makeAdder(5)
+  val add10 = makeAdder(10)
+  io.log("add5(3):", add5(3))
+  io.log("add10(3):", add10(3))
+  val c = makeCounter()
+  c.inc()
+  c.inc()
+  c.inc()
+  io.log("counter:", c.get())
+  c.reset()
+  io.log("after reset:", c.get())
+  io.log("PASS fn_closures")
+}

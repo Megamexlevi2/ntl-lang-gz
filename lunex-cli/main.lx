@@ -1,0 +1,65 @@
+val core = @fimport("./src/core.lx")
+
+fn name(text) {
+  core.name(text)
+}
+
+fn version(text) {
+  core.version(text)
+}
+
+fn description(text) {
+  core.description(text)
+}
+
+fn usage(text) {
+  core.usage(text)
+}
+
+fn footer(text) {
+  core.footer(text)
+}
+
+fn defaultCommand(text) {
+  core.defaultCommand(text)
+}
+
+fn reset() {
+  core.reset()
+}
+
+fn command(name, handler, description, aliases) {
+  core.command(name, handler, description, aliases)
+}
+
+fn alias(commandName, aliasName) {
+  core.alias(commandName, aliasName)
+}
+
+fn has(name) {
+  core.has(name)
+}
+
+fn find(name) {
+  core.find(name)
+}
+
+fn commands() {
+  core.commands()
+}
+
+fn commandCount() {
+  core.commandCount()
+}
+
+fn parse(argv) {
+  core.parse(argv)
+}
+
+fn help() {
+  core.help()
+}
+
+fn run(argv) {
+  core.run(argv)
+}

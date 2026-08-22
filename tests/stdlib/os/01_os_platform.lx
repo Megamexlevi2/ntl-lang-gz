@@ -1,0 +1,9 @@
+
+val io = @import("std.io"); val os = @import("std.os")
+fn main() {
+  io.log("platform:", os.platform())
+  io.log("arch:", os.arch())
+  io.log("hostname:", os.hostname())
+  io.log("pid:", os.pid())
+  io.log("PASS os_platform")
+}

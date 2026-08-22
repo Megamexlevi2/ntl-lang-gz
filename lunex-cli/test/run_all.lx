@@ -1,0 +1,62 @@
+val io  = @import("std.io")
+val cli = @fimport("../main.lx")
+
+var _passed = 0
+var _failed = 0
+
+fn _check(name, actual, expected) {
+  if actual == expected {
+    _passed = _passed + 1
+    io.log(io.green("  ok   "), name)
+  } else {
+    _failed = _failed + 1
+    io.log(io.red("  FAIL "), name)
+    io.log("         expected:", expected)
+    io.log("         actual:  ", actual)
+  }
+}
+
+fn _resetDemo() {
+  cli.reset()
+  cli.name("demo")
+  cli.version("1.2.3")
+  cli.description("Demo CLI")
+}
+
+val tCore           = @fimport("./test_core.lx")
+val tParse          = @fimport("./test_parse.lx")
+val tHelp           = @fimport("./test_help.lx")
+val tDispatch       = @fimport("./test_dispatch.lx")
+val tAlias          = @fimport("./test_aliases.lx")
+val tFooter         = @fimport("./test_footer.lx")
+val tDefaultCommand = @fimport("./test_default_command.lx")
+
+fn main() {
+  io.log(io.bold(io.cyan("================================")))
+  io.log(io.bold(io.cyan("   lunex-cli test suite")))
+  io.log(io.bold(io.cyan("================================")))
+  io.log("")
+
+  val ok1 = tCore.run()
+  io.log("")
+  val ok2 = tParse.run()
+  io.log("")
+  val ok3 = tHelp.run()
+  io.log("")
+  val ok4 = tDispatch.run()
+  io.log("")
+  val ok5 = tAlias.run()
+  io.log("")
+  val ok6 = tFooter.run()
+  io.log("")
+  val ok7 = tDefaultCommand.run()
+  io.log("")
+
+  if ok1 && ok2 && ok3 && ok4 && ok5 && ok6 && ok7 {
+    io.log(io.bold(io.green("✓ all 7 suites passed.")))
+  } else {
+    io.log(io.bold(io.red("✗ some suites reported failures — see above.")))
+  }
+
+  ok1 && ok2 && ok3 && ok4 && ok5 && ok6 && ok7
+}

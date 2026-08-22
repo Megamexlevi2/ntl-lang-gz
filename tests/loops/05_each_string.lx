@@ -1,0 +1,12 @@
+
+val io = @import("std.io")
+fn countChar(str, target) {
+  var count = 0
+  each ch in str { if ch == target { count = count + 1 } }
+  count
+}
+fn main() {
+  each ch in "lunex" { io.log("char:", ch) }
+  io.log("spaces:", countChar("hello world", " "))
+  io.log("PASS each_string")
+}

@@ -1,0 +1,66 @@
+val io  = @import("std.io")
+val xml = @fimport("../main.lx")
+
+fn run() {
+  io.log(io.bold("--- validate tests ---"))
+
+  val good = xml.createElement("person")
+  xml.setAttribute(good, "id", "u1")
+  xml.appendChild(good, xml.createTextElement("name", "Alice"))
+  val wf = xml.isWellFormed(good)
+  io.log("well-formed:", wf.ok)
+  io.log("error empty:", wf.error.length == 0)
+
+  val s1 = xml.validateSchema(good, {
+    tag:              "person"
+    requiredAttrs:    ["id"]
+    requiredChildren: ["name"]
+  })
+  io.log("schema valid:", s1.ok)
+
+  val noAttr = xml.createElement("person")
+  val s2 = xml.validateSchema(noAttr, {
+    tag:           "person"
+    requiredAttrs: ["id"]
+  })
+  io.log("missing attr ok=false:", s2.ok == false)
+  io.log("missing attr error:", s2.error)
+
+  val noChild = xml.createElement("book")
+  val s3 = xml.validateSchema(noChild, {
+    requiredChildren: ["title"]
+  })
+  io.log("missing child ok=false:", s3.ok == false)
+  io.log("missing child error:", s3.error)
+
+  val over = xml.createElement("group")
+  xml.appendChild(over, xml.createElement("item"))
+  xml.appendChild(over, xml.createElement("item"))
+  xml.appendChild(over, xml.createElement("item"))
+  val s4 = xml.validateSchema(over, { maxChildren: 2 })
+  io.log("maxChildren ok=false:", s4.ok == false)
+
+  val empty = xml.createElement("title")
+  val s5 = xml.validateSchema(empty, { requireText: true })
+  io.log("requireText ok=false:", s5.ok == false)
+
+  val src = "<catalog><book id=\"b1\"><title>Go</title></book></catalog>"
+  val doc = xml.parse(src)
+  val t1 = xml.validateTree(doc, {
+    catalog: { requiredChildren: ["book"] }
+    book:    { requiredAttrs: ["id"], requiredChildren: ["title"] }
+    title:   { requireText: true }
+  })
+  io.log("tree valid:", t1.ok)
+
+  val src2 = "<catalog><book><title></title></book></catalog>"
+  val doc2 = xml.parse(src2)
+  val t2   = xml.validateTree(doc2, {
+    book:  { requiredAttrs: ["id"] }
+    title: { requireText: true }
+  })
+  io.log("tree invalid ok=false:", t2.ok == false)
+  io.log("tree error:", t2.error)
+
+  io.log(io.green("validate tests passed"))
+}

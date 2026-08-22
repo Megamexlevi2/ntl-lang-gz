@@ -1,0 +1,14 @@
+
+val io     = @import("std.io")
+val crypto = @import("std.crypto")
+fn main() {
+  val key   = "0123456789abcdef"
+  val plain = "secret lunex message"
+  val enc   = crypto.encrypt(plain, key)
+  val dec   = crypto.decrypt(enc, key)
+  io.log("plain:", plain)
+  io.log("encrypted:", enc)
+  io.log("decrypted:", dec)
+  io.log("round-trip:", plain == dec)
+  io.log("PASS crypto_aes")
+}

@@ -1,0 +1,25 @@
+
+val io = @import("std.io")
+fn process(value) {
+  guard value != null else {
+    io.warn("null — skipping")
+  }
+  if value != null {
+    unless value > 0 {
+      io.warn("non-positive: " + str(value))
+    }
+    if value > 0 {
+      defer { io.log("cleanup:", value) }
+      val cat = if value <= 10 { "small" } else if value <= 100 { "medium" } else { "large" }
+      io.log("processed:", value, "→", cat)
+    }
+  }
+}
+fn main() {
+  process(5)
+  process(50)
+  process(500)
+  process(-1)
+  process(null)
+  io.log("PASS combined_flow")
+}

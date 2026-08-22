@@ -1,0 +1,7 @@
+
+val io = @import("std.io")
+fn main() {
+  val config = { host: "localhost", port: "8080", debug: "true" }
+  each key in config { io.log(" ", key, "=", config[key]) }
+  io.log("PASS each_object")
+}

@@ -1,0 +1,10 @@
+
+val io = @import("std.io")
+
+fn main() {
+  io.log("=== io module test ===")
+  io.log("Hello from io.log!")
+  io.warn("This is a warning")
+  io.err("This is an error")
+  io.log("Done — log/warn/err all work")
+}

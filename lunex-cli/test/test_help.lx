@@ -1,0 +1,48 @@
+val io  = @import("std.io")
+val cli = @fimport("../main.lx")
+
+var _passed = 0
+var _failed = 0
+
+fn _check(name, actual, expected) {
+  if actual == expected {
+    _passed = _passed + 1
+    io.log(io.green("  ok   "), name)
+  } else {
+    _failed = _failed + 1
+    io.log(io.red("  FAIL "), name)
+    io.log("         expected:", expected)
+    io.log("         actual:  ", actual)
+  }
+}
+
+fn _resetDemo() {
+  cli.reset()
+  cli.name("demo")
+  cli.version("1.2.3")
+  cli.description("Demo CLI")
+}
+
+fn run() {
+  io.log(io.bold("--- help tests ---"))
+  _resetDemo()
+
+  cli.command("hello", fn(args) {
+    "hello"
+  }, "Say hello")
+  cli.command("sum", fn(args) {
+    "sum"
+  }, "Add numbers", ["add"])
+  cli.footer("Use 'demo help <command>' for detailed help.")
+
+  val text = cli.help()
+  _check("help has title", text.includes("demo 1.2.3"), true)
+  _check("help has description", text.includes("Demo CLI"), true)
+  _check("help has hello", text.includes("hello"), true)
+  _check("help has alias", text.includes("add"), true)
+  _check("help has flags", text.includes("--version"), true)
+  _check("help has footer", text.includes("detailed help"), true)
+
+  io.log(io.green("help tests passed"))
+  _failed == 0
+}

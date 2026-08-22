@@ -1,0 +1,10 @@
+
+val io = @import("std.io")
+fn main() {
+  var i = 0
+  while i < 100 {
+    if i * i > 50 { io.log("first i where i²>50:", i); break }
+    i = i + 1
+  }
+  io.log("PASS while_break")
+}

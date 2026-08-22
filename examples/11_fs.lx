@@ -1,0 +1,29 @@
+val io = @import("std.io")
+val fs = @import("std.fs")
+
+fn main() {
+  val path = "/tmp/lunex_demo.txt"
+
+  fs.writeFile(path, "Hello from Lunex!\nLine 2\nLine 3")
+  io.log("Wrote:", path)
+
+  val content = fs.readFile(path)
+  io.log("Content:", content)
+
+  val lines = fs.readLines(path)
+  io.log("Lines:", lines.length, "total")
+  each line in lines {
+    io.log(" |", line)
+  }
+
+  val info = fs.stat(path)
+  io.log("Size:", info.size, "bytes")
+
+  fs.appendFile(path, "\nLine 4\nLine 5")
+  val updated = fs.readLines(path)
+  io.log("After append:", updated.length, "lines")
+
+  fs.delete(path)
+  io.log("Deleted:", path)
+  io.success("File system demo complete")
+}

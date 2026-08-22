@@ -1,0 +1,24 @@
+
+val io = @import("std.io")
+fn lazy(f) {
+  var done = false; var val_ = null
+  struct {
+    fn get() {
+      if !done { val_ = f(); done = true; io.log("  [computed]") }
+      val_
+    }
+  }
+}
+fn expensive() {
+  io.log("  [running...]")
+  var s = 0; var i = 1
+  while i <= 1000 { s = s + i; i = i + 1 }
+  s
+}
+fn main() {
+  val r = lazy(expensive)
+  io.log("first call:", r.get())
+  io.log("second (cached):", r.get())
+  io.log("third (cached):", r.get())
+  io.log("PASS lazy_eval")
+}

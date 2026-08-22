@@ -1,0 +1,22 @@
+
+val io = @import("std.io")
+fn TrafficLight() {
+  var state = "red"
+  struct {
+    fn current()  { state }
+    fn next() {
+      state = match state {
+        "red" => "green"  "green" => "yellow"  "yellow" => "red"  _ => "red"
+      }
+    }
+    fn label() {
+      match state { "red" => "Stop"  "green" => "Go"  "yellow" => "Caution"  _ => "?" }
+    }
+  }
+}
+fn main() {
+  val light = TrafficLight()
+  var i = 0
+  while i < 7 { io.log(light.current(), "→", light.label()); light.next(); i = i + 1 }
+  io.log("PASS struct_state_machine")
+}

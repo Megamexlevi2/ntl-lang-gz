@@ -1,0 +1,12 @@
+
+val io       = @import("std.io")
+val datetime = @import("std.datetime")
+fn main() {
+  io.info("starting operation...")
+  datetime.sleep(200)
+  io.success("step 1 complete")
+  datetime.sleep(100)
+  io.success("step 2 complete")
+  io.info("all steps finished in ~300ms")
+  io.log("PASS io_spinner")
+}

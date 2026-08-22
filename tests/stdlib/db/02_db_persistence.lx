@@ -1,0 +1,15 @@
+val io = @import("std.io")
+val db = @import("std.db")
+val fs = @import("std.fs")
+
+fn main() {
+  val items = db.table("test_persistence_items")
+  items.clear()
+  items.insert({ label: "durable" })
+
+  val dbFile = ".lunex/data/default.db"
+  io.log("db_file_exists:", fs.exists(dbFile))
+
+  items.clear()
+  io.log("PASS db_persistence")
+}

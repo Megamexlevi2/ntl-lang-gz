@@ -1,0 +1,11 @@
+
+val io   = @import("std.io")
+val json = @import("std.json")
+
+fn main() {
+  val data = json.parse("{\"name\":\"Lunex\",\"age\":7,\"tags\":[\"fast\",\"simple\"]}")
+  io.log("name:", data.name)
+  io.log("age:", data.age)
+  io.log("tag2:", data.tags[1])
+  io.log("PASS json_parse")
+}

@@ -1,0 +1,15 @@
+
+val io    = @import("std.io")
+val utils = @import("std.utils")
+fn main() {
+  var fruits = ["apple", "banana", "cherry"]
+  io.log("fruits:", fruits)
+  io.log("first:", fruits[0])
+  io.log("length:", fruits.length)
+  var nums = [10, 20, 30]
+  io.log("sum:", utils.sum(nums))
+  io.log("min:", utils.min(nums))
+  io.log("max:", utils.max(nums))
+  each fruit in fruits { io.log(" -", fruit) }
+  io.log("PASS array_operations")
+}

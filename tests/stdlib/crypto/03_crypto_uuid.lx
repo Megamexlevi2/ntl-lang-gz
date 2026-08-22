@@ -1,0 +1,12 @@
+
+val io     = @import("std.io")
+val crypto = @import("std.crypto")
+fn main() {
+  var i = 0
+  while i < 5 {
+    io.log(" ", crypto.randomUUID())
+    i = i + 1
+  }
+  io.log("unique:", crypto.randomUUID() != crypto.randomUUID())
+  io.log("PASS crypto_uuid")
+}

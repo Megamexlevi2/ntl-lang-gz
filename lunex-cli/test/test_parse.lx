@@ -1,0 +1,47 @@
+val io  = @import("std.io")
+val cli = @fimport("../main.lx")
+
+var _passed = 0
+var _failed = 0
+
+fn _check(name, actual, expected) {
+  if actual == expected {
+    _passed = _passed + 1
+    io.log(io.green("  ok   "), name)
+  } else {
+    _failed = _failed + 1
+    io.log(io.red("  FAIL "), name)
+    io.log("         expected:", expected)
+    io.log("         actual:  ", actual)
+  }
+}
+
+fn _resetDemo() {
+  cli.reset()
+  cli.name("demo")
+  cli.version("1.2.3")
+  cli.description("Demo CLI")
+}
+
+fn run() {
+  io.log(io.bold("--- parse tests ---"))
+  _resetDemo()
+
+  val args = cli.parse(["demo", "sum", "--a=10", "--b", "20", "left", "right"])
+  _check("command parsed", args.command(), "sum")
+  _check("option a as string", args.get("a"), "10")
+  _check("option b as string", args.get("b"), "20")
+  _check("option a as number", args.number("a"), 10)
+  _check("option b as int", args.int("b"), 20)
+  _check("positional count", args.count(), 2)
+  _check("first positional", args.arg(0), "left")
+  _check("second positional", args.arg(1), "right")
+  _check("help requested false", args.helpRequested(), false)
+  _check("version requested false", args.versionRequested(), false)
+
+  val flags = cli.parse(["demo", "--help"])
+  _check("global help flag", flags.helpRequested(), true)
+
+  io.log(io.green("parse tests passed"))
+  _failed == 0
+}

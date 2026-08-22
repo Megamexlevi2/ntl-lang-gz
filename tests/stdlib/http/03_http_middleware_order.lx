@@ -1,0 +1,34 @@
+val io   = @import("std.io")
+val http = @import("std.http")
+val os   = @import("std.os")
+
+fn main() {
+  val server = http.createServer(fn(req, res) {})
+  val order = []
+
+  server.use(fn(req, res) {
+    order.push("first")
+  })
+
+  server.use(fn(req, res) {
+    order.push("second")
+  })
+
+  server.get("/order", fn(req, res) {
+    order.push("handler")
+    http.json(res, { trace: order }, 200)
+  })
+
+  val handle = http.listen(server, 39219, "127.0.0.1")
+  os.sleep(150)
+
+  val resp = http.get("http://127.0.0.1:39219/order")
+  val trace = resp.body.trace
+
+  io.log("step0:", trace[0])
+  io.log("step1:", trace[1])
+  io.log("step2:", trace[2])
+
+  handle.close()
+  io.log("PASS http_middleware_order")
+}

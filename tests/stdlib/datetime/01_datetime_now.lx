@@ -1,0 +1,11 @@
+
+val io = @import("std.io")
+val dt = @import("std.datetime")
+fn main() {
+  val now = dt.now()
+  io.log("now:", now)
+  io.log("ts:", dt.toTimestamp(now))
+  io.log("fmt:", dt.format(now, "YYYY-MM-DD HH:mm:ss"))
+  io.log("utc:", dt.utcNow())
+  io.log("PASS datetime_now")
+}

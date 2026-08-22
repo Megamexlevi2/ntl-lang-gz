@@ -1,0 +1,17 @@
+val io = @import("std.io"); val buffer = @import("std.buffer")
+fn main() {
+  val buf = buffer.alloc(4)
+  buf.fill(7)
+  io.log("after fill:", buf.toArray())
+
+  buf.resize(8)
+  io.log("after grow:", buf.toArray())
+  io.log("length after grow:", buf.length)
+
+  val src = buffer.from([9, 9, 9])
+  val n = buf.copyFrom(src, 2)
+  io.log("copyFrom count:", n)
+  io.log("after copyFrom:", buf.toArray())
+
+  io.log("PASS buffer_mutation")
+}

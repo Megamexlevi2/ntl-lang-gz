@@ -1,0 +1,25 @@
+val io = @import("std.io")
+val db = @import("std.db")
+
+fn main() {
+  val users = db.table("test_crud_users")
+  users.clear()
+
+  users.insert({ name: "Alice", age: 30 })
+  users.insert({ name: "Bob", age: 25 })
+
+  io.log("count:", users.count())
+
+  val alice = users.findOne({ name: "Alice" })
+  io.log("found:", alice.name)
+
+  users.update({ name: "Alice" }, { age: 31 })
+  val updated = users.findOne({ name: "Alice" })
+  io.log("updated_age:", updated.age)
+
+  users.delete({ name: "Bob" })
+  io.log("count_after_delete:", users.count())
+
+  users.clear()
+  io.log("PASS db_crud")
+}

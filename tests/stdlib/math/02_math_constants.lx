@@ -1,0 +1,9 @@
+
+val io = @import("std.io"); val math = @import("std.math")
+fn main() {
+  io.log("PI:", math.PI)
+  io.log("E:", math.E)
+  io.log("2*PI:", 2 * math.PI)
+  io.log("sqrt(2):", math.sqrt(2))
+  io.log("PASS math_constants")
+}

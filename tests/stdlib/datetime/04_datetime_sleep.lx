@@ -1,0 +1,13 @@
+
+val io = @import("std.io")
+val dt = @import("std.datetime")
+fn main() {
+  io.log("before sleep")
+  dt.sleep(200)
+  io.log("after 200ms")
+  val t0 = dt.toTimestamp(dt.now())
+  dt.sleep(200)
+  val t1 = dt.toTimestamp(dt.now())
+  io.log("measured:", t1 - t0, "ms")
+  io.log("PASS datetime_sleep")
+}

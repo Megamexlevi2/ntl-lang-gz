@@ -1,0 +1,29 @@
+
+val io = @import("std.io")
+fn validateAge(age) {
+  guard age >= 0 else {
+    io.err("out of range: age is negative")
+  }
+  guard age <= 150 else {
+    io.err("out of range: age exceeds 150")
+  }
+  if age >= 0 && age <= 150 {
+    io.log("valid age:", age)
+  }
+}
+fn divide(a, b) {
+  guard b != 0 else {
+    io.warn("division by zero — result undefined")
+  }
+  if b != 0 {
+    io.log(str(a) + " / " + str(b) + " =", a / b)
+  }
+}
+fn main() {
+  validateAge(25)
+  validateAge(-1)
+  validateAge(200)
+  divide(10, 2)
+  divide(10, 0)
+  io.log("PASS guard")
+}

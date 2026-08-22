@@ -1,0 +1,37 @@
+val io  = @import("std.io")
+val xml = @fimport("../main.lx")
+
+fn run() {
+  io.log(io.bold("--- query tests ---"))
+
+  val src = "<store><product id=\"p1\" category=\"electronics\"><name>Laptop</name><price>999</price></product><product id=\"p2\" category=\"books\"><name>Clean Code</name><price>39</price></product><product id=\"p3\" category=\"electronics\"><name>Phone</name><price>699</price></product></store>"
+  val doc = xml.parse(src)
+
+  val allProducts = xml.selectAll(doc, "product")
+  io.log("all products:", allProducts.length)
+
+  val first = xml.selectFirst(doc, "product")
+  io.log("first product id:", xml.attr(first, "id"))
+
+  val electronics = xml.selectByAttr(doc, "category", "electronics")
+  io.log("electronics:", electronics.length)
+
+  val name = xml.selectPath(doc, "store.product.name")
+  io.log("path select name:", xml.text(name))
+
+  val kids = xml.children(doc)
+  io.log("direct children:", kids.length)
+
+  val directProds = xml.childrenByTag(doc, "product")
+  io.log("direct products:", directProds.length)
+
+  io.log("attr shorthand:", xml.attr(first, "category"))
+
+  val priceNode = xml.selectFirst(first, "price")
+  io.log("text shorthand:", xml.text(priceNode))
+
+  val missing = xml.selectFirst(doc, "nonexistent")
+  io.log("missing returns null:", missing == null)
+
+  io.log(io.green("query tests passed"))
+}

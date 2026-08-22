@@ -1,0 +1,11 @@
+
+val io = @import("std.io"); val math = @import("std.math")
+fn main() {
+  val pi = math.PI
+  io.log("sin(0):", math.sin(0))
+  io.log("sin(PI/2):", math.sin(pi / 2))
+  io.log("cos(0):", math.cos(0))
+  io.log("cos(PI):", math.cos(pi))
+  io.log("tan(PI/4):", math.tan(pi / 4))
+  io.log("PASS math_trig")
+}

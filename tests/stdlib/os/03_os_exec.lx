@@ -1,0 +1,8 @@
+
+val io = @import("std.io"); val os = @import("std.os")
+fn main() {
+  io.log("echo:", os.exec("echo hello from shell"))
+  io.log("uname:", os.exec("uname -s"))
+  io.log("date:", os.exec("date +%Y"))
+  io.log("PASS os_exec")
+}

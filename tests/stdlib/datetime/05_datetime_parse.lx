@@ -1,0 +1,9 @@
+
+val io = @import("std.io"); val dt = @import("std.datetime")
+fn main() {
+  val raw    = "2026-06-13T00:00:00Z"
+  val parsed = dt.parse(raw)
+  io.log("parsed:", parsed)
+  io.log("year:", dt.format(parsed, "YYYY"))
+  io.log("PASS datetime_parse")
+}

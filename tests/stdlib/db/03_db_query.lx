@@ -1,0 +1,23 @@
+val io = @import("std.io")
+val db = @import("std.db")
+
+fn main() {
+  val products = db.table("test_query_products")
+  products.clear()
+
+  products.insert({ name: "Widget", price: 10 })
+  products.insert({ name: "Gadget", price: 25 })
+  products.insert({ name: "Gizmo", price: 25 })
+
+  val cheap = products.find({ price: 10 })
+  io.log("cheap_count:", cheap.length)
+
+  io.log("has_gadget:", products.exists({ name: "Gadget" }))
+  io.log("has_missing:", products.exists({ name: "Nope" }))
+
+  io.log("total:", products.count())
+  io.log("count_25:", products.count({ price: 25 }))
+
+  products.clear()
+  io.log("PASS db_query")
+}

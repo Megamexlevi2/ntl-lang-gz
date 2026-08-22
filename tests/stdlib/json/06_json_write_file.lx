@@ -1,0 +1,28 @@
+
+val io   = @import("std.io")
+val fs   = @import("std.fs")
+val json = @import("std.json")
+
+fn main() {
+  val path = fs.tempFile("lunex-json-")
+  val data = {
+    name: "Lunex",
+    active: true,
+    tags: ["fast", "simple"]
+  }
+
+  val saved = json.writeFile(path, data)
+  io.log("saved:", saved)
+
+  val text = fs.readFile(path)
+  io.log(text)
+  io.log("has_newline:", text.includes("\n"))
+  io.log("has_spaces:", text.includes("  "))
+
+  val parsed = json.parse(text)
+  io.log("name:", parsed.name)
+  io.log("tag2:", parsed.tags[1])
+
+  fs.delete(path)
+  io.log("PASS json_write_file")
+}

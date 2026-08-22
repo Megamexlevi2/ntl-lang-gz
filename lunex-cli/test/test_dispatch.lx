@@ -1,0 +1,59 @@
+val io  = @import("std.io")
+val cli = @fimport("../main.lx")
+
+var _passed = 0
+var _failed = 0
+
+fn _check(name, actual, expected) {
+  if actual == expected {
+    _passed = _passed + 1
+    io.log(io.green("  ok   "), name)
+  } else {
+    _failed = _failed + 1
+    io.log(io.red("  FAIL "), name)
+    io.log("         expected:", expected)
+    io.log("         actual:  ", actual)
+  }
+}
+
+fn _resetDemo() {
+  cli.reset()
+  cli.name("demo")
+  cli.version("1.2.3")
+  cli.description("Demo CLI")
+}
+
+fn run() {
+  io.log(io.bold("--- dispatch tests ---"))
+  _resetDemo()
+
+  var called = ""
+  var nameArg = ""
+
+  cli.command("main", fn(args) {
+    called = "main"
+    nameArg = args.get("name")
+    "main-result"
+  }, "Default command")
+
+  cli.command("hello", fn(args) {
+    called = "hello"
+    nameArg = args.get("name")
+    "hello-result"
+  }, "Say hello")
+
+  val result1 = cli.run(["demo", "hello", "--name", "Lunex"])
+  _check("dispatch command result", result1, "hello-result")
+  _check("dispatch command name", called, "hello")
+  _check("dispatch argument", nameArg, "Lunex")
+
+  called = ""
+  nameArg = ""
+  val result2 = cli.run(["demo", "--name", "World"])
+  _check("default main result", result2, "main-result")
+  _check("default main command", called, "main")
+  _check("default main arg", nameArg, "World")
+
+  io.log(io.green("dispatch tests passed"))
+  _failed == 0
+}

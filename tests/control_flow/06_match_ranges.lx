@@ -1,0 +1,20 @@
+
+val io = @import("std.io")
+fn classify(n) {
+  if n == 0       { "zero" }
+  else if n <= 9  { "single digit" }
+  else if n <= 99 { "double digit" }
+  else            { "large" }
+}
+fn ageGroup(age) {
+  if age <= 12      { "child" }
+  else if age <= 17 { "teenager" }
+  else if age <= 64 { "adult" }
+  else if age <= 120 { "senior" }
+  else              { "out of range" }
+}
+fn main() {
+  each n in [0, 1, 9, 10, 99, 100, 1000] { io.log(n, "→", classify(n)) }
+  each age in [5, 15, 30, 70] { io.log("age", age, "→", ageGroup(age)) }
+  io.log("PASS match_ranges")
+}

@@ -1,0 +1,24 @@
+val io     = @import("std.io")
+val crypto = @import("std.crypto")
+
+fn main() {
+  io.log("SHA-256:", crypto.sha256("hello"))
+  io.log("MD5:    ", crypto.md5("hello"))
+  io.log("SHA-512:", crypto.sha512("hello"))
+
+  io.log("UUID:   ", crypto.randomUUID())
+
+  val encoded = crypto.base64Encode("Hello, Lunex!")
+  val decoded = crypto.base64Decode(encoded)
+  io.log("Base64 encode:", encoded)
+  io.log("Base64 decode:", decoded)
+
+  val hmac = crypto.hmac("sha256", "my-secret-key", "Hello, Lunex!")
+  io.log("HMAC-SHA-256: ", hmac)
+
+  val key        = "my-32-char-key-here-padding-ok!!"
+  val ciphertext = crypto.encrypt("top secret message", key)
+  val plaintext  = crypto.decrypt(ciphertext, key)
+  io.log("Encrypted:", ciphertext)
+  io.log("Decrypted:", plaintext)
+}

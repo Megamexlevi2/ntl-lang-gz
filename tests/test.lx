@@ -1,0 +1,6 @@
+val io = @import("std.io")
+val http = @import("std.http")
+
+fn main() {
+  io.log(http)
+}

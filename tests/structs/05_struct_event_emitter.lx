@@ -1,0 +1,21 @@
+
+val io = @import("std.io")
+fn EventEmitter() {
+  val handlers = {}
+  struct {
+    fn on(event, h) { handlers[event] = h }
+    fn emit(event, data) {
+      if handlers[event] != null { handlers[event](data) }
+    }
+  }
+}
+fn main() {
+  val e = EventEmitter()
+  e.on("start", fn(d) { io.log("started:", d) })
+  e.on("stop",  fn(d) { io.log("stopped:", d) })
+  e.on("error", fn(d) { io.err("error:", d) })
+  e.emit("start", "server")
+  e.emit("error", "timeout")
+  e.emit("stop",  "shutdown")
+  io.log("PASS struct_event_emitter")
+}

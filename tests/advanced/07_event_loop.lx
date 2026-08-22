@@ -1,0 +1,29 @@
+
+val io = @import("std.io")
+fn EventLoop() {
+  var queue    = []
+  val handlers = {}
+  struct {
+    fn on(type_, f)      { handlers[type_] = f }
+    fn emit(type_, data) { queue.push({ type: type_, data: data }) }
+    fn run() {
+      while queue.length > 0 {
+        val evt = queue[0]
+        queue   = queue.slice(1, queue.length)
+        if handlers[evt.type] != null { handlers[evt.type](evt.data) }
+      }
+    }
+  }
+}
+fn main() {
+  val evtLoop = EventLoop()
+  evtLoop.on("connect",    fn(d) { io.log("connected:", d) })
+  evtLoop.on("message",    fn(d) { io.log("message:", d) })
+  evtLoop.on("disconnect", fn(d) { io.warn("disconnected:", d) })
+  evtLoop.emit("connect",    "client-001")
+  evtLoop.emit("message",    "hello")
+  evtLoop.emit("message",    "bye")
+  evtLoop.emit("disconnect", "client-001")
+  evtLoop.run()
+  io.log("PASS event_loop")
+}

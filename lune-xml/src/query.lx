@@ -1,0 +1,98 @@
+
+fn _findAll(node, tag, results) {
+  if node.tag == tag {
+    results.push(node)
+  }
+  each child in node.children {
+    _findAll(child, tag, results)
+  }
+}
+
+fn _findFirst(node, tag) {
+  if node.tag == tag {
+    node
+  } else {
+    var found = null
+    var i     = 0
+    while found == null and i < node.children.length {
+      found = _findFirst(node.children[i], tag)
+      i     = i + 1
+    }
+    found
+  }
+}
+
+fn _findByAttr(node, attrName, attrValue, results) {
+  val v = node.getAttribute(attrName)
+  if v == attrValue {
+    results.push(node)
+  }
+  each child in node.children {
+    _findByAttr(child, attrName, attrValue, results)
+  }
+}
+
+fn _findByPath(node, parts, depth) {
+  if depth >= parts.length {
+    node
+  } else {
+    val segment = parts[depth]
+    var found   = null
+    var i       = 0
+    while found == null and i < node.children.length {
+      val child = node.children[i]
+      if child.tag == segment {
+        found = _findByPath(child, parts, depth + 1)
+      }
+      i = i + 1
+    }
+    found
+  }
+}
+
+fn selectAll(root, tag) {
+  var results = []
+  _findAll(root, tag, results)
+  results
+}
+
+fn selectFirst(root, tag) {
+  _findFirst(root, tag)
+}
+
+fn selectByAttr(root, attrName, attrValue) {
+  var results = []
+  _findByAttr(root, attrName, attrValue, results)
+  results
+}
+
+fn selectPath(root, path) {
+  val parts = path.split(".")
+  if parts.length == 0 or parts[0] != root.tag {
+    null
+  } else {
+    _findByPath(root, parts, 1)
+  }
+}
+
+fn children(node) {
+  node.children
+}
+
+fn childrenByTag(node, tag) {
+  var results = []
+  each child in node.children {
+    if child.tag == tag {
+      results.push(child)
+    }
+  }
+  results
+}
+
+fn text(node) {
+  node.getText()
+}
+
+fn attr(node, name) {
+  node.getAttribute(name)
+}

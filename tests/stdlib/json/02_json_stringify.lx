@@ -1,0 +1,18 @@
+
+val io   = @import("std.io")
+val json = @import("std.json")
+
+fn main() {
+  val user = {
+    name: "Lunex",
+    age: 7,
+    active: true,
+    roles: ["admin", "writer"]
+  }
+
+  val text = json.stringify(user)
+  io.log(text)
+  io.log("contains_newline:", text.includes("\n"))
+  io.log("contains_spaces:", text.includes("  "))
+  io.log("PASS json_stringify")
+}

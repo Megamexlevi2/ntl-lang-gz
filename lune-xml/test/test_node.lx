@@ -1,0 +1,33 @@
+val io  = @import("std.io")
+val xml = @fimport("../main.lx")
+
+fn run() {
+  io.log(io.bold("--- node struct tests ---"))
+
+  val n = xml.createElement("div")
+  io.log("tag:", n.tag)
+  io.log("text empty:", n.text.length == 0)
+  io.log("hasChildren:", n.hasChildren())
+  io.log("childCount:", n.childCount())
+
+  xml.setAttribute(n, "id",    "box")
+  xml.setAttribute(n, "class", "active")
+  io.log("id:",    xml.getAttribute(n, "id"))
+  io.log("class:", xml.getAttribute(n, "class"))
+  io.log("hasAttr id:",    n.hasAttr("id"))
+  io.log("hasAttr style:", n.hasAttr("style"))
+
+  val leaf = xml.createTextElement("title", "Lunex XML v2")
+  io.log("leaf text:", leaf.getText())
+  io.log("leaf text field:", leaf.text)
+
+  xml.appendChild(n, leaf)
+  io.log("hasChildren after append:", n.hasChildren())
+  io.log("childCount after append:", n.childCount())
+  io.log("childAt(0) tag:", n.childAt(0).tag)
+  io.log("childAt(0) text:", n.childAt(0).getText())
+
+  io.log("toString:", n.toString())
+
+  io.log(io.green("node struct tests passed"))
+}

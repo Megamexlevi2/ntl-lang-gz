@@ -1,0 +1,98 @@
+
+fn _err(msg) { { ok: false, error: msg } }
+fn _ok()     { { ok: true,  error: "" } }
+
+fn validateSchema(node, schema) {
+  var result = _ok()
+
+  if result.ok and schema.tag and node.tag != schema.tag {
+    result = _err("expected tag <" + schema.tag + ">, got <" + node.tag + ">")
+  }
+
+  if result.ok and schema.requiredAttrs {
+    var i = 0
+    while result.ok and i < schema.requiredAttrs.length {
+      val name = schema.requiredAttrs[i]
+      unless node.getAttribute(name) {
+        result = _err("<" + node.tag + "> missing required attribute: " + name)
+      }
+      i = i + 1
+    }
+  }
+
+  if result.ok and schema.requiredChildren {
+    var i = 0
+    while result.ok and i < schema.requiredChildren.length {
+      val childTag = schema.requiredChildren[i]
+      var found    = false
+      each child in node.children {
+        if child.tag == childTag { found = true }
+      }
+      unless found {
+        result = _err("<" + node.tag + "> missing required child <" + childTag + ">")
+      }
+      i = i + 1
+    }
+  }
+
+  if result.ok and schema.maxChildren {
+    if node.childCount() > schema.maxChildren {
+      result = _err("<" + node.tag + "> has too many children (max " + str(schema.maxChildren) + ")")
+    }
+  }
+
+  if result.ok and schema.minChildren {
+    if node.childCount() < schema.minChildren {
+      result = _err("<" + node.tag + "> needs at least " + str(schema.minChildren) + " children")
+    }
+  }
+
+  if result.ok and schema.noText and node.getText().length > 0 {
+    result = _err("<" + node.tag + "> should not have text content")
+  }
+
+  if result.ok and schema.requireText {
+    if node.getText().length == 0 and !node.hasChildren() {
+      result = _err("<" + node.tag + "> must have text content")
+    }
+  }
+
+  result
+}
+
+fn validateTree(root, schemas) {
+  val schema = schemas[root.tag]
+  var result = _ok()
+
+  if schema {
+    result = validateSchema(root, schema)
+  }
+
+  var i = 0
+  while result.ok and i < root.children.length {
+    result = validateTree(root.children[i], schemas)
+    i      = i + 1
+  }
+
+  result
+}
+
+fn isWellFormed(node) {
+  var result = _ok()
+
+  if !node {
+    result = _err("node is null")
+  }
+
+  if result.ok and (!node.tag or node.tag.length == 0) {
+    result = _err("node has no tag")
+  }
+
+  var i = 0
+  while result.ok and i < node.children.length {
+    result = isWellFormed(node.children[i])
+    i      = i + 1
+  }
+
+  result
+}

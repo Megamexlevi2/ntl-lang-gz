@@ -1,0 +1,9 @@
+
+val io = @import("std.io"); val crypto = @import("std.crypto")
+fn main() {
+  val msg = "hello, lunex"
+  io.log("sha256:", crypto.sha256(msg))
+  io.log("md5:", crypto.md5(msg))
+  io.log("deterministic:", crypto.sha256(msg) == crypto.sha256(msg))
+  io.log("PASS crypto_hash")
+}

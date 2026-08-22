@@ -1,0 +1,10 @@
+
+val io = @import("std.io"); val dt = @import("std.datetime")
+fn main() {
+  val now = dt.now()
+  io.log("ISO:", dt.format(now, "YYYY-MM-DDTHH:mm:ssZ"))
+  io.log("date:", dt.format(now, "YYYY-MM-DD"))
+  io.log("time:", dt.format(now, "HH:mm:ss"))
+  io.log("human:", dt.format(now, "DD MMM YYYY"))
+  io.log("PASS datetime_format")
+}

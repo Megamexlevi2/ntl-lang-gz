@@ -1,0 +1,18 @@
+
+val io = @import("std.io")
+fn Observable() {
+  var subs = []
+  struct {
+    fn subscribe(f) { subs.push(f) }
+    fn notify(evt)  { each s in subs { s(evt) } }
+  }
+}
+fn main() {
+  val store = Observable()
+  store.subscribe(fn(e) { io.log("[Log]", e.type, e.payload) })
+  store.subscribe(fn(e) { if e.type == "error" { io.err("ALERT:", e.payload) } })
+  store.notify({ type: "info",  payload: "started" })
+  store.notify({ type: "error", payload: "db down" })
+  store.notify({ type: "info",  payload: "recovered" })
+  io.log("PASS observer")
+}

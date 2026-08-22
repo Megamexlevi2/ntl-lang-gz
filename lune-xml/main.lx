@@ -1,0 +1,195 @@
+val _node      = @fimport("./src/node.lx")
+val _builder   = @fimport("./src/builder.lx")
+val _parser    = @fimport("./src/parser.lx")
+val _query     = @fimport("./src/query.lx")
+val _transform = @fimport("./src/transform.lx")
+val _validate  = @fimport("./src/validate.lx")
+
+fn tag(name, text) {
+  if text {
+    _builder.createTextElement(name, text)
+  } else {
+    _builder.createElement(name)
+  }
+}
+
+fn add(parent, a, b, c, d, e) {
+  if a { parent.appendChild(a) }
+  if b { parent.appendChild(b) }
+  if c { parent.appendChild(c) }
+  if d { parent.appendChild(d) }
+  if e { parent.appendChild(e) }
+  parent
+}
+
+fn set(node, key, value) {
+  node.setAttribute(key, value)
+  node
+}
+
+fn setAll(node, attrs) {
+  var keys = Object.keys(attrs)
+  keys = keys.sort()
+  each k in keys {
+    node.setAttribute(k, attrs[k])
+  }
+  node
+}
+
+
+fn get(node) {
+  _query.text(node)
+}
+
+fn attr(node, name) {
+  _query.attr(node, name)
+}
+
+fn toString(root) {
+  _builder.build(root)
+}
+
+fn fromString(src) {
+  _parser.parse(src)
+}
+
+fn find(root, tag_) {
+  _query.selectFirst(root, tag_)
+}
+
+fn findAll(root, tag_) {
+  _query.selectAll(root, tag_)
+}
+
+
+fn createElement(tag_) {
+  _builder.createElement(tag_)
+}
+
+fn createTextElement(tag_, text) {
+  _builder.createTextElement(tag_, text)
+}
+
+fn createCDataElement(tag_, text) {
+  _builder.createCDataElement(tag_, text)
+}
+
+fn createElementWithAttrs(tag_, a) {
+  _builder.createElementWithAttrs(tag_, a)
+}
+
+fn createElementWithAttrPairs(tag_, ps) {
+  _builder.createElementWithAttrPairs(tag_, ps)
+}
+
+fn appendChild(node, child) {
+  node.appendChild(child)
+}
+
+fn setAttribute(node, k, v) {
+  node.setAttribute(k, v)
+}
+
+fn getAttribute(node, k) {
+  node.getAttribute(k)
+}
+
+fn attributeNames(node) {
+  node.attributeNames()
+}
+
+fn hasChildren(node) {
+  node.hasChildren()
+}
+
+fn isCData(node) {
+  node.isCData()
+}
+
+fn setCData(node, flag) {
+  node.setCData(flag)
+}
+
+fn build(root) {
+  _builder.build(root)
+}
+
+fn buildFragment(node) {
+  _builder.buildFragment(node)
+}
+
+fn buildCompact(root) {
+  _builder.buildCompact(root)
+}
+
+fn buildFragmentCompact(node) {
+  _builder.buildFragmentCompact(node)
+}
+
+fn parse(src) {
+  _parser.parse(src)
+}
+
+fn selectFirst(root, tag_) {
+  _query.selectFirst(root, tag_)
+}
+
+fn selectAll(root, tag_) {
+  _query.selectAll(root, tag_)
+}
+
+fn selectByAttr(root, attrName, attrValue) {
+  _query.selectByAttr(root, attrName, attrValue)
+}
+
+fn selectPath(root, path) {
+  _query.selectPath(root, path)
+}
+
+fn children(node) {
+  _query.children(node)
+}
+
+fn childrenByTag(node, tag_) {
+  _query.childrenByTag(node, tag_)
+}
+
+fn text(node) {
+  _query.text(node)
+}
+
+fn clone(node) {
+  _transform.clone(node)
+}
+
+fn walk(root, fn_) {
+  _transform.walk(root, fn_)
+}
+
+fn mapNodes(root, fn_) {
+  _transform.mapNodes(root, fn_)
+}
+
+fn filterNodes(root, pred) {
+  _transform.filterNodes(root, pred)
+}
+
+fn toObject(root) {
+  _transform.toObject(root)
+}
+
+fn fromObject(tag_, obj) {
+  _transform.fromObject(tag_, obj)
+}
+
+fn isWellFormed(node) {
+  _validate.isWellFormed(node)
+}
+
+fn validateSchema(node, schema) {
+  _validate.validateSchema(node, schema)
+}
+
+fn validateTree(root, schemas) {
+  _validate.validateTree(root, schemas)
+}

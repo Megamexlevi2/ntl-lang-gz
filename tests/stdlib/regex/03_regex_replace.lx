@@ -1,0 +1,9 @@
+
+val io = @import("std.io"); val regex = @import("std.regex")
+fn main() {
+  val t1 = "Hello   World   Lunex"
+  io.log("normalized:", regex.replace(t1, "\\s+", " "))
+  val html = "<b>bold</b> and <i>italic</i>"
+  io.log("stripped:", regex.replace(html, "<[^>]+>", ""))
+  io.log("PASS regex_replace")
+}

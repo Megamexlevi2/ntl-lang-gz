@@ -1,0 +1,47 @@
+val io  = @import("std.io")
+val cli = @fimport("../main.lx")
+
+var _passed = 0
+var _failed = 0
+
+fn _check(name, actual, expected) {
+  if actual == expected {
+    _passed = _passed + 1
+    io.log(io.green("  ok   "), name)
+  } else {
+    _failed = _failed + 1
+    io.log(io.red("  FAIL "), name)
+    io.log("         expected:", expected)
+    io.log("         actual:  ", actual)
+  }
+}
+
+fn run() {
+  io.log(io.bold("--- default command tests ---"))
+  cli.reset()
+  cli.name("demo")
+  cli.version("2.0.0")
+  cli.description("Default command CLI")
+
+  var called = ""
+
+  cli.command("index", fn(args) {
+    called = "index"
+    "index"
+  }, "Index command")
+
+  cli.command("help", fn(args) {
+    called = "help"
+    args.command()
+  }, "Help command")
+
+  cli.defaultCommand("index")
+  _check("default command getter", cli.defaultCommand(null), "index")
+
+  val result = cli.run(["demo"])
+  _check("default command dispatch", result, "index")
+  _check("default command handler called", called, "index")
+
+  io.log(io.green("default command tests passed"))
+  _failed == 0
+}

@@ -1,0 +1,12 @@
+
+val io = @import("std.io"); val math = @import("std.math")
+fn randInt(min, max) { math.floor(math.random() * (max - min + 1)) + min }
+fn main() {
+  io.log("5 random floats:")
+  var i = 0
+  while i < 5 { io.log(" ", math.random()); i = i + 1 }
+  io.log("5 random ints 1-100:")
+  var j = 0
+  while j < 5 { io.log(" ", randInt(1, 100)); j = j + 1 }
+  io.log("PASS math_random")
+}

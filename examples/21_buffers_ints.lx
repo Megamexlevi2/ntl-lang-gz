@@ -1,0 +1,51 @@
+val io     = @import("std.io")
+val buffer = @import("std.buffer")
+val ints   = @import("std.ints")
+
+fn main() {
+  val buf = buffer.alloc(16)
+  buf.writeU32(0, 4021, "be")
+  buf.writeI16(4, -12, "be")
+  buf.writeU8(6, 255)
+  buf.writeF64(8, 3.14159, "be")
+
+  io.log("readU32:", buf.readU32(0, "be"))
+  io.log("readI16:", buf.readI16(4, "be"))
+  io.log("readU8: ", buf.readU8(6))
+  io.log("readF64:", buf.readF64(8, "be"))
+  io.log("hex:    ", buf.toHex())
+  io.log("length: ", buf.length)
+
+  val text = buffer.from("Lunex")
+  io.log("from string toHex:", text.toHex())
+  io.log("from string toString:", text.toString())
+
+  val hexBuf = buffer.from("48656c6c6f", "hex")
+  io.log("from hex toString:", hexBuf.toString())
+
+  val a = buffer.from([1, 2, 3])
+  val b = buffer.from([4, 5, 6])
+  val joined = buffer.concat(a, b)
+  io.log("concat toArray:", joined.toArray())
+
+  io.log("---")
+
+  io.log("addU8 wrap:  ", ints.addU8(250, 10))
+  io.log("subI8 wrap:  ", ints.subI8(-128, 1))
+  io.log("mulU32 wrap: ", ints.mulU32(200000, 200000))
+  io.log("u32 cast:    ", ints.u32(4294967296 + 5))
+  io.log("i32 cast:    ", ints.i32(4294967295))
+
+  io.log("shlU32:      ", ints.shlU32(1, 31))
+  io.log("rotlU32:     ", ints.rotlU32(1, 1))
+
+  io.log("bitwise &:   ", 12 & 10)
+  io.log("bitwise |:   ", 12 | 10)
+  io.log("bitwise ^:   ", 12 ^ 10)
+  io.log("bitwise ~:   ", ~0)
+  io.log("shift <<:    ", 1 << 4)
+  io.log("shift >>:    ", 256 >> 4)
+
+  io.log("isU8Overflow(300):", ints.isU8Overflow(300))
+  io.log("I32_MAX:", ints.I32_MAX)
+}

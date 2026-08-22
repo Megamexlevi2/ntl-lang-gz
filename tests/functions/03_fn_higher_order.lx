@@ -1,0 +1,12 @@
+
+val io = @import("std.io")
+fn main() {
+  val nums    = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  val doubled = nums.map(fn(x) { x * 2 })
+  val evens   = nums.filter(fn(x) { x % 2 == 0 })
+  val total   = nums.reduce(fn(acc, x) { acc + x }, 0)
+  io.log("doubled:", doubled)
+  io.log("evens:", evens)
+  io.log("sum:", total)
+  io.log("PASS fn_higher_order")
+}

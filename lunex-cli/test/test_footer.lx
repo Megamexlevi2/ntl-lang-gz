@@ -1,0 +1,35 @@
+val io  = @import("std.io")
+val cli = @fimport("../main.lx")
+
+var _passed = 0
+var _failed = 0
+
+fn _check(name, actual, expected) {
+  if actual == expected {
+    _passed = _passed + 1
+    io.log(io.green("  ok   "), name)
+  } else {
+    _failed = _failed + 1
+    io.log(io.red("  FAIL "), name)
+    io.log("         expected:", expected)
+    io.log("         actual:  ", actual)
+  }
+}
+
+fn run() {
+  io.log(io.bold("--- footer tests ---"))
+  cli.reset()
+  cli.name("demo")
+  cli.version("2.0.0")
+  cli.description("Footer CLI")
+  cli.command("help", fn(args) { "help" }, "Show help")
+  cli.footer("Footer line for users.")
+
+  val text = cli.help()
+  _check("footer getter", cli.footer(null), "Footer line for users.")
+  _check("help includes footer", text.includes("Footer line for users."), true)
+  _check("command count", cli.commandCount(), 1)
+
+  io.log(io.green("footer tests passed"))
+  _failed == 0
+}

@@ -1,0 +1,13 @@
+val io = @import("std.io")
+
+fn main() {
+  io.log("Hello, World!")
+
+  val name = "Lunex"
+  io.log("Hello, " + name + "!")
+
+  val names = ["Alice", "Bob", "Charlie"]
+  each n in names {
+    io.log("Hello, " + n + "!")
+  }
+}

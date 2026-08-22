@@ -1,0 +1,15 @@
+
+val io = @import("std.io")
+fn main() {
+  val items = [
+    { sku: "A001", name: "Widget",   qty: 100, price: 2.50 }
+    { sku: "B002", name: "Gadget",   qty: 25,  price: 14.99 }
+    { sku: "C003", name: "Doohickey",qty: 7,   price: 49.00 }
+  ]
+  io.log("Inventory Report")
+  io.log("================")
+  each item in items {
+    io.log(`[${item.sku}] ${item.name} — qty:${item.qty} price:$${item.price}`)
+  }
+  io.log("PASS io_format")
+}

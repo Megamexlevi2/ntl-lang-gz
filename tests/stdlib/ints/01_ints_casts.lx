@@ -1,0 +1,12 @@
+val io = @import("std.io"); val ints = @import("std.ints")
+fn main() {
+  io.log("u8(300):", ints.u8(300))
+  io.log("i8(200):", ints.i8(200))
+  io.log("u16(70000):", ints.u16(70000))
+  io.log("i16(40000):", ints.i16(40000))
+  io.log("u32(4294967296 + 5):", ints.u32(4294967296 + 5))
+  io.log("i32(4294967295):", ints.i32(4294967295))
+  io.log("u64(-1):", ints.u64(-1))
+  io.log("i64(9223372036854775807):", ints.i64(9223372036854775807))
+  io.log("PASS ints_casts")
+}

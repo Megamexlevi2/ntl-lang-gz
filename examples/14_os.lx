@@ -1,0 +1,36 @@
+val os = @import("std.os")
+val io = @import("std.io")
+
+fn main() {
+  io.log("=== System Info ===")
+  io.log("Platform:", os.platform())
+  io.log("Arch:    ", os.arch())
+  io.log("CPUs:    ", os.cpus())
+  io.log("Hostname:", os.hostname())
+  io.log("CWD:     ", os.cwd())
+
+  io.log("")
+  io.log("=== Environment ===")
+  os.setenv("MY_VAR", "hello from Lunex")
+  io.log("MY_VAR:", os.getenv("MY_VAR"))
+
+  io.log("")
+  io.log("=== exec ===")
+  val git = os.exec("git --version")
+  if git.ok {
+    io.success(git.stdout)
+  } else {
+    io.warn("git not found")
+  }
+
+  val ls = os.exec("ls /tmp")
+  if ls.ok {
+    io.log("Files in /tmp:")
+    val files = ls.stdout.split("\n")
+    each f in files {
+      if f.length > 0 {
+        io.log(" -", f)
+      }
+    }
+  }
+}

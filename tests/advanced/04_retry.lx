@@ -1,0 +1,28 @@
+
+val io       = @import("std.io")
+val datetime = @import("std.datetime")
+val math     = @import("std.math")
+fn retry(f, maxAttempts, baseMs) {
+  var attempt = 0
+  var found   = null
+  while attempt < maxAttempts && found == null {
+    val result = f(attempt)
+    if result != null {
+      found = result
+    } else {
+      val delay = baseMs * math.pow(2, attempt)
+      io.warn("attempt " + str(attempt + 1) + " failed, waiting " + str(delay) + "ms")
+      datetime.sleep(delay)
+      attempt = attempt + 1
+    }
+  }
+  found
+}
+fn unstable(attempt) {
+  if attempt < 2 { null } else { "success on attempt " + str(attempt + 1) }
+}
+fn main() {
+  val r = retry(unstable, 5, 50)
+  if r != null { io.success(r) } else { io.err("all attempts failed") }
+  io.log("PASS retry")
+}

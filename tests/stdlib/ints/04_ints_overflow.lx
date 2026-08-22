@@ -1,0 +1,14 @@
+val io = @import("std.io"); val ints = @import("std.ints")
+fn main() {
+  io.log("isU8Overflow(300):", ints.isU8Overflow(300))
+  io.log("isU8Overflow(100):", ints.isU8Overflow(100))
+  io.log("isI32Overflow(2147483648):", ints.isI32Overflow(2147483648))
+  io.log("isI32Overflow(0):", ints.isI32Overflow(0))
+
+  io.log("U8_MAX:", ints.U8_MAX)
+  io.log("I32_MIN:", ints.I32_MIN)
+  io.log("I32_MAX:", ints.I32_MAX)
+  io.log("U32_MAX:", ints.U32_MAX)
+
+  io.log("PASS ints_overflow")
+}

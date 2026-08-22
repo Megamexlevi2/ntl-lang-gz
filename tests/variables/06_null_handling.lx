@@ -1,0 +1,14 @@
+
+val io = @import("std.io")
+fn maybeValue(flag) {
+  if flag { "present" } else { null }
+}
+fn main() {
+  val a = maybeValue(true)
+  val b = maybeValue(false)
+  io.log("a:", a)
+  io.log("b:", b)
+  if a == null { io.log("a is null") } else { io.log("a has value:", a) }
+  if b == null { io.log("b is null — as expected") }
+  io.log("PASS null_handling")
+}

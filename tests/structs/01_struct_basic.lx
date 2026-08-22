@@ -1,0 +1,18 @@
+
+val io = @import("std.io")
+fn Point(x, y) { struct { x = x; y = y } }
+fn Rectangle(w, h) {
+  struct {
+    width = w; height = h
+    fn area()      { this.width * this.height }
+    fn perimeter() { 2 * (this.width + this.height) }
+  }
+}
+fn main() {
+  val p = Point(3, 4)
+  io.log("point:", p.x, p.y)
+  val r = Rectangle(10, 5)
+  io.log("area:", r.area())
+  io.log("perimeter:", r.perimeter())
+  io.log("PASS struct_basic")
+}

@@ -1,0 +1,106 @@
+val nodeLib = @fimport("./node.lx")
+val utils   = @import("std.utils")
+
+fn _cloneNode(n) {
+  val copy = nodeLib.newNode(n.tag)
+  copy.setText(n.getText())
+  copy.setCData(n.isCData())
+  each k in n.attrOrder {
+    if n.attrs[k] != null {
+      copy.setAttribute(k, n.attrs[k])
+    }
+  }
+  each child in n.children {
+    copy.appendChild(_cloneNode(child))
+  }
+  copy
+}
+
+fn clone(n) {
+  _cloneNode(n)
+}
+
+fn walk(root, fn_) {
+  fn_(root)
+  each child in root.children {
+    walk(child, fn_)
+  }
+}
+
+fn mapNodes(root, fn_) {
+  val mapped = fn_(root)
+  if mapped {
+    var newChildren = []
+    each child in root.children {
+      val mc = mapNodes(child, fn_)
+      if mc {
+        newChildren.push(mc)
+      }
+    }
+    mapped.children = newChildren
+    mapped
+  } else {
+    null
+  }
+}
+
+fn filterNodes(root, predicate) {
+  var kept = []
+  each child in root.children {
+    if predicate(child) {
+      kept.push(filterNodes(child, predicate))
+    }
+  }
+  root.children = kept
+  root
+}
+
+fn _toObj(root) {
+  if !root.hasChildren() {
+    val t = root.getText()
+    if t.length > 0 { t } else { {} }
+  } else {
+    var obj = {}
+    each child in root.children {
+      val existing = obj[child.tag]
+      val val_     = _toObj(child)
+      if existing {
+        if utils.type(existing) == "array" {
+          existing.push(val_)
+        } else {
+          obj[child.tag] = [existing, val_]
+        }
+      } else {
+        obj[child.tag] = val_
+      }
+    }
+    obj
+  }
+}
+
+fn toObject(root) {
+  _toObj(root)
+}
+
+fn fromObject(tag, obj) {
+  val root = nodeLib.newNode(tag)
+  var keys = Object.keys(obj)
+  keys     = keys.sort()
+  each k in keys {
+    val v = obj[k]
+    if utils.type(v) == "object" {
+      root.appendChild(fromObject(k, v))
+    } else if utils.type(v) == "array" {
+      each item in v {
+        if utils.type(item) == "object" {
+          root.appendChild(fromObject(k, item))
+        } else {
+          root.appendChild(nodeLib.newTextNode(k, str(item)))
+        }
+      }
+    } else {
+      root.appendChild(nodeLib.newTextNode(k, str(v)))
+    }
+  }
+  root
+}

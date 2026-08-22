@@ -1,0 +1,37 @@
+val io = @import("std.io")
+
+fn main() {
+  val s = "  Hello, Lunex!  "
+  io.log("original:    ", s)
+  io.log("trim:        ", s.trim())
+  io.log("toUpperCase: ", s.trim().toUpperCase())
+  io.log("toLowerCase: ", s.trim().toLowerCase())
+  io.log("length:      ", s.trim().length)
+  io.log("slice(0,5):  ", s.trim().slice(0, 5))
+  io.log("indexOf:     ", s.trim().indexOf("Lunex"))
+  io.log("startsWith:  ", s.trim().startsWith("Hello"))
+  io.log("endsWith:    ", s.trim().endsWith("!"))
+  io.log("replace:     ", s.trim().replace("Lunex", "World"))
+  io.log("includes:    ", s.trim().includes("Lunex"))
+
+  val csv = "alice,bob,charlie,dave"
+  val parts = csv.split(",")
+  io.log("split:       ", parts)
+  io.log("join:        ", parts.join(" | "))
+
+  val nums = [3, 1, 4, 1, 5, 9, 2, 6]
+  io.log("")
+  io.log("original:", nums)
+  io.log("length:  ", nums.length)
+  io.log("map *2:  ", nums.map(fn(x) { x * 2 }))
+  io.log("filter>4:", nums.filter(fn(x) { x > 4 }))
+  io.log("reduce+: ", nums.reduce(fn(acc, x) { acc + x }, 0))
+  io.log("includes:", nums.includes(5))
+
+  val copy = [1, 2, 3]
+  copy.push(4)
+  copy.push(5)
+  io.log("push:    ", copy)
+  io.log("pop:     ", copy.pop())
+  io.log("after:   ", copy)
+}

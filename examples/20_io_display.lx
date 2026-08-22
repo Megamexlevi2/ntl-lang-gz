@@ -1,0 +1,42 @@
+val io = @import("std.io")
+
+fn makeProduct(name, price, stock, category) {
+  struct {
+    name     = name
+    price    = price
+    stock    = stock
+    category = category
+  }
+}
+
+fn main() {
+  io.log("Standard log message")
+  io.warn("Warning: something looks off")
+  io.err("Error: something went wrong")
+  io.success("Success: all good")
+
+  io.log("")
+
+  io.log(io.green("green text"))
+  io.log(io.red("red text"))
+  io.log(io.yellow("yellow text"))
+  io.log(io.cyan("cyan text"))
+  io.log(io.blue("blue text"))
+  io.log(io.bold("bold text"))
+
+  io.log("")
+
+  val products = [
+    makeProduct("Widget A",   9.99,  120, "hardware"),
+    makeProduct("Widget B",  24.50,   45, "hardware"),
+    makeProduct("Plugin C",   4.99,  300, "software"),
+    makeProduct("Service D", 99.00,    8, "service")
+  ]
+
+  io.log(io.bold("Product Inventory:"))
+  io.table(products)
+
+  io.log(io.green("✓"), "Build passed")
+  io.log(io.yellow("⚠"), "2 warnings")
+  io.log(io.red("✗"), "0 errors")
+}

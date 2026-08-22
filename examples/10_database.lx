@@ -1,0 +1,57 @@
+val io = @import("std.io")
+val db = @import("std.db")
+
+fn makeUser(name, email, age) {
+  struct {
+    name  = name
+    email = email
+    age   = age
+  }
+}
+
+fn main() {
+  val users = db.table("users")
+  users.define( {
+    id:    { type: "string", default: "$uuid" }
+    name:  { type: "string", required: true }
+    email: { type: "string", required: true, unique: true }
+    age:   { type: "number", default: 0 }
+  })
+
+  io.log("Inserting demo users...")
+  users.insert(makeUser("Alice", "alice@example.com", 30))
+  users.insert(makeUser("Bob", "bob@example.com", 25))
+  users.insert(makeUser("Carol", "carol@example.com", 35))
+
+  io.log("Total users:", users.count())
+
+  val alice = users.findOne(struct {
+    email = "alice@example.com"
+  })
+  io.log("Found:", alice.name, alice.email)
+
+  val all = users.find(struct {})
+  io.log("All users:")
+  each u in all {
+    io.log(" -", u.name, u.email, "age:", u.age)
+  }
+
+  users.update(struct {
+    email = "alice@example.com"
+  }, struct {
+    name = "Alicia"
+    age  = 31
+  })
+  val updated = users.findOne(struct {
+    email = "alice@example.com"
+  })
+  io.log("Updated:", updated.name, "age:", updated.age)
+
+  users.delete(struct {
+    email = "bob@example.com"
+  })
+  io.log("After delete:", users.count())
+
+  val remaining = users.find(struct {})
+  io.table(remaining)
+}

@@ -1,0 +1,41 @@
+val io = @import("std.io")
+
+fn Animal(name, sound) {
+  val self = struct {
+    name  = name
+    sound = sound
+
+    fn speak() {
+      self.name + " says " + self.sound
+    }
+
+    fn toString() {
+      `Animal(${self.name})`
+    }
+  }
+  self
+}
+
+fn Counter(start) {
+  var count = start
+  struct {
+    fn inc()   { count = count + 1 }
+    fn dec()   { count = count - 1 }
+    fn value() { count }
+  }
+}
+
+fn main() {
+  val cat = Animal("Cat", "Meow")
+  val dog = Animal("Dog", "Woof")
+  io.log(cat.speak())
+  io.log(dog.speak())
+  io.log(cat.toString())
+
+  val c = Counter(0)
+  c.inc()
+  c.inc()
+  c.inc()
+  c.dec()
+  io.log("Counter:", c.value())
+}

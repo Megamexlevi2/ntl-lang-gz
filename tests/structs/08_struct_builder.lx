@@ -1,0 +1,57 @@
+
+val io = @import("std.io")
+
+fn QueryBuilder() {
+  var table_ = ""
+  var conds  = []
+  var cols   = ["*"]
+  var lim    = null
+
+  struct {
+    fn from(t) {
+      table_ = t
+      this
+    }
+
+    fn select_fn(c) {
+      cols = c
+      this
+    }
+
+    fn where(c) {
+      conds.push(c)
+      this
+    }
+
+    fn limit(n) {
+      lim = n
+      this
+    }
+
+    fn build() {
+      var q = "SELECT " + cols.join(", ") + " FROM " + table_
+      if conds.length > 0 {
+        q = q + " WHERE " + conds.join(" AND ")
+      }
+      if lim != null {
+        q = q + " LIMIT " + str(lim)
+      }
+      q
+    }
+  }
+}
+
+fn main() {
+  val q = QueryBuilder()
+
+  io.log(
+    q.from("users")
+     .select_fn(["id", "name", "email"])
+     .where("active = true")
+     .where("age > 18")
+     .limit(10)
+     .build()
+  )
+
+  io.log("PASS struct_builder")
+}

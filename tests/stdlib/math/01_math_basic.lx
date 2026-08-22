@@ -1,0 +1,11 @@
+
+val io = @import("std.io"); val math = @import("std.math")
+fn main() {
+  io.log("sqrt(144):", math.sqrt(144))
+  io.log("pow(2,10):", math.pow(2, 10))
+  io.log("abs(-37):", math.abs(-37))
+  io.log("floor(3.9):", math.floor(3.9))
+  io.log("ceil(3.1):", math.ceil(3.1))
+  io.log("round(3.5):", math.round(3.5))
+  io.log("PASS math_basic")
+}

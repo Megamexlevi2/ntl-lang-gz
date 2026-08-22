@@ -1,0 +1,8 @@
+
+val io = @import("std.io"); val regex = @import("std.regex")
+fn main() {
+  io.log("csv:", regex.split("one,two,three", ","))
+  io.log("words:", regex.split("one   two  three", "\\s+"))
+  io.log("path:", regex.split("/usr/local/bin", "/"))
+  io.log("PASS regex_split")
+}

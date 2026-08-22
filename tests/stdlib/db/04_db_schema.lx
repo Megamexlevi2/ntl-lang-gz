@@ -1,0 +1,22 @@
+val io = @import("std.io")
+val db = @import("std.db")
+
+fn main() {
+  val accounts = db.table("test_schema_accounts")
+  accounts.clear()
+
+  accounts.schema({
+    email: { type: "string", required: true, unique: true }
+    balance: { type: "number", default: 0 }
+  })
+
+  accounts.insert({ email: "a@example.com" })
+  val row = accounts.findOne({ email: "a@example.com" })
+  io.log("default_balance:", row.balance)
+
+  val names = db.list()
+  io.log("db_list_is_array:", names.length >= 0)
+
+  accounts.clear()
+  io.log("PASS db_schema")
+}

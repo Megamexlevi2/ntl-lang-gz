@@ -1,0 +1,43 @@
+val io  = @import("std.io")
+val xml = @fimport("../main.lx")
+
+fn run() {
+  io.log(io.bold("--- builder tests ---"))
+
+  val root = xml.createElement("root")
+  val name = xml.createTextElement("name", "Lunex")
+  xml.appendChild(root, name)
+  val out = xml.build(root)
+  io.log("build output:")
+  io.log(out)
+
+  val link = xml.createElementWithAttrs("link", {
+    href: "https://example.com"
+    rel:  "stylesheet"
+  })
+  xml.appendChild(root, link)
+  val out2 = xml.build(root)
+  io.log("with attrs:")
+  io.log(out2)
+
+  val img = xml.createElementWithAttrs("img", { src: "logo.png", alt: "logo" })
+  io.log("self-close:", xml.buildFragment(img))
+
+  val frag = xml.buildFragment(xml.createTextElement("msg", "1 < 2 & 3 > 0"))
+  io.log("escaped:", frag)
+
+  val node = xml.createElementWithAttrs("a", { title: "say \"hi\"" })
+  io.log("attr escaped:", xml.buildFragment(node))
+
+  val catalog = xml.createElement("catalog")
+  val book    = xml.createElementWithAttrs("book", { id: "1" })
+  val title   = xml.createTextElement("title", "Clean Code")
+  val author  = xml.createTextElement("author", "Martin")
+  xml.appendChild(book, title)
+  xml.appendChild(book, author)
+  xml.appendChild(catalog, book)
+  io.log("nested:")
+  io.log(xml.build(catalog))
+
+  io.log(io.green("builder tests passed"))
+}

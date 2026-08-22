@@ -1,0 +1,10 @@
+
+val io = @import("std.io")
+fn main() {
+  var i = 0
+  while i < 5 { io.log("i =", i); i = i + 1 }
+  var n = 1; var p = 1
+  while n <= 6 { p = p * n; n = n + 1 }
+  io.log("6! =", p)
+  io.log("PASS while_basic")
+}

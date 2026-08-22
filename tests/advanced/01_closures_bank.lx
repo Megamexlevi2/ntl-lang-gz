@@ -1,0 +1,28 @@
+
+val io = @import("std.io")
+fn BankAccount(initial) {
+  var balance = initial
+  struct {
+    fn deposit(n) { balance = balance + n }
+    fn withdraw(n) {
+      if n > balance {
+        io.warn("insufficient funds")
+      } else {
+        balance = balance - n
+      }
+    }
+    fn balance() { balance }
+  }
+}
+fn main() {
+  val a1 = BankAccount(100)
+  val a2 = BankAccount(500)
+  a1.deposit(50)
+  a1.withdraw(30)
+  io.log("a1:", a1.balance())
+  a2.withdraw(200)
+  a2.deposit(100)
+  io.log("a2:", a2.balance())
+  a1.withdraw(200)
+  io.log("PASS closures_bank")
+}

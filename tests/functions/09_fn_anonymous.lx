@@ -1,0 +1,12 @@
+
+val io = @import("std.io")
+fn main() {
+  val result = fn(a, b) { a + b }(3, 4)
+  io.log("IIFE result:", result)
+  val greet = fn(name) { "Hello, " + name + "!" }
+  io.log(greet("Lunex"))
+  val nums    = [1, 2, 3, 4, 5]
+  val doubled = nums.map(fn(x) { x * 2 })
+  io.log("doubled:", doubled)
+  io.log("PASS fn_anonymous")
+}

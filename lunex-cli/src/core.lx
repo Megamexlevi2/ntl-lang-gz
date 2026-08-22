@@ -1,0 +1,437 @@
+val io = @import("std.io")
+val os = @import("std.os")
+
+var _name           = "lunex"
+var _version        = "0.1.0"
+var _description    = "Command-line helpers for Lunex applications."
+var _usage          = ""
+var _footer         = ""
+var _defaultCommand = null
+var _commands       = []
+
+fn _isProgramName(token) {
+  token == _name ||
+  token == "lunex" ||
+  token.endsWith(".lx") ||
+  token.endsWith(".nax") ||
+  token.includes("/") ||
+  token.includes("\\")
+}
+
+fn _normalizeAliases(aliases) {
+  if aliases == null {
+    []
+  } else {
+    aliases
+  }
+}
+
+fn _commandMatches(cmd, target) {
+  cmd.name == target || cmd.aliases.includes(target)
+}
+
+fn _findCommand(name) {
+  var i = 0
+  var found = null
+  while i < _commands.length {
+    if _commandMatches(_commands[i], name) {
+      found = _commands[i]
+      i = _commands.length
+    }
+    i = i + 1
+  }
+  found
+}
+
+fn _replaceOrPush(spec) {
+  var i = 0
+  var replaced = false
+  while i < _commands.length {
+    if _commands[i].name == spec.name {
+      _commands[i] = spec
+      replaced = true
+      i = _commands.length
+    }
+    i = i + 1
+  }
+  if !replaced {
+    _commands.push(spec)
+  }
+  spec
+}
+
+fn _makeArgs(raw, commandName, positionals, options, errors, helpFlag, versionFlag) {
+  struct {
+    raw = raw
+    commandName = commandName
+    positionals = positionals
+    options = options
+    errors = errors
+
+    fn command() {
+      commandName
+    }
+
+    fn get(name) {
+      options[name]
+    }
+
+    fn has(name) {
+      options[name] != null
+    }
+
+    fn flag(name) {
+      options[name] == true
+    }
+
+    fn string(name) {
+      if options[name] == null {
+        null
+      } else {
+        str(options[name])
+      }
+    }
+
+    fn number(name) {
+      if options[name] == null {
+        null
+      } else if typeof(options[name]) == "boolean" {
+        null
+      } else {
+        num(options[name])
+      }
+    }
+
+    fn int(name) {
+      if options[name] == null {
+        null
+      } else if typeof(options[name]) == "boolean" {
+        null
+      } else {
+        parseInt(str(options[name]))
+      }
+    }
+
+    fn arg(index) {
+      if index < positionals.length {
+        positionals[index]
+      } else {
+        null
+      }
+    }
+
+    fn count() {
+      positionals.length
+    }
+
+    fn rest() {
+      positionals
+    }
+
+    fn helpRequested() {
+      helpFlag
+    }
+
+    fn versionRequested() {
+      versionFlag
+    }
+
+    fn toObject() {
+      struct {
+        raw = raw
+        command = commandName
+        positionals = positionals
+        options = options
+        errors = errors
+        helpRequested = helpFlag
+        versionRequested = versionFlag
+      }
+    }
+  }
+}
+
+fn reset() {
+  _name           = "lunex"
+  _version        = "0.1.0"
+  _description    = "Command-line helpers for Lunex applications."
+  _usage          = ""
+  _footer         = ""
+  _defaultCommand = null
+  _commands       = []
+}
+
+fn name(text) {
+  if text != null {
+    _name = text
+  }
+  _name
+}
+
+fn version(text) {
+  if text != null {
+    _version = text
+  }
+  _version
+}
+
+fn description(text) {
+  if text != null {
+    _description = text
+  }
+  _description
+}
+
+fn usage(text) {
+  if text != null {
+    _usage = text
+  }
+  _usage
+}
+
+fn footer(text) {
+  if text != null {
+    _footer = text
+  }
+  _footer
+}
+
+fn defaultCommand(text) {
+  if text != null {
+    _defaultCommand = text
+  }
+  _defaultCommand
+}
+
+fn command(name, handler, description, aliases) {
+  var desc = ""
+  if description != null {
+    desc = description
+  }
+
+  val spec = struct {
+    name = name
+    description = desc
+    aliases = _normalizeAliases(aliases)
+    handler = handler
+  }
+
+  _replaceOrPush(spec)
+}
+
+fn alias(commandName, aliasName) {
+  val cmd = _findCommand(commandName)
+  if cmd == null {
+    false
+  } else {
+    if !cmd.aliases.includes(aliasName) {
+      cmd.aliases.push(aliasName)
+    }
+    true
+  }
+}
+
+fn has(name) {
+  _findCommand(name) != null
+}
+
+fn find(name) {
+  _findCommand(name)
+}
+
+fn commands() {
+  _commands
+}
+
+fn commandCount() {
+  _commands.length
+}
+
+fn _tokenize(argv) {
+  var raw = []
+  if argv == null {
+    raw = os.args()
+  } else {
+    raw = argv
+  }
+
+  if raw.length == 0 {
+    []
+  } else {
+    if _isProgramName(raw[0]) {
+      raw.slice(1, raw.length)
+    } else {
+      raw
+    }
+  }
+}
+
+fn parse(argv) {
+  val tokens = _tokenize(argv)
+
+  var positionals      = []
+  var options          = {}
+  var errors           = []
+  var commandName      = null
+  var helpRequested    = false
+  var versionRequested = false
+  var stopOptions      = false
+
+  var i = 0
+  while i < tokens.length {
+    val token = tokens[i]
+
+    if stopOptions {
+      if commandName == null && !_isProgramName(token) && !token.startsWith("-") {
+        commandName = token
+      } else {
+        positionals.push(token)
+      }
+    } else if token == "--" {
+      stopOptions = true
+    } else if token == "--help" || token == "-h" {
+      helpRequested = true
+    } else if token == "--version" || token == "-V" {
+      versionRequested = true
+    } else if token.startsWith("--") {
+      val body = token.slice(2, token.length)
+      val eq = body.indexOf("=")
+
+      if eq >= 0 {
+        options[body.slice(0, eq)] = body.slice(eq + 1, body.length)
+      } else if i + 1 < tokens.length && !tokens[i + 1].startsWith("-") {
+        options[body] = tokens[i + 1]
+        i = i + 1
+      } else {
+        options[body] = true
+      }
+    } else if token.startsWith("-") && token.length > 1 {
+      val body = token.slice(1, token.length)
+      val eq = body.indexOf("=")
+
+      if eq >= 0 {
+        options[body.slice(0, eq)] = body.slice(eq + 1, body.length)
+      } else if body.length == 1 && i + 1 < tokens.length && !tokens[i + 1].startsWith("-") {
+        options[body] = tokens[i + 1]
+        i = i + 1
+      } else {
+        options[body] = true
+      }
+    } else {
+      if commandName == null {
+        commandName = token
+      } else {
+        positionals.push(token)
+      }
+    }
+
+    i = i + 1
+  }
+
+  _makeArgs(tokens, commandName, positionals, options, errors, helpRequested, versionRequested)
+}
+
+fn _renderCommandLine(cmd) {
+  var line = "  " + cmd.name
+
+  if cmd.aliases.length > 0 {
+    line = line + " (" + cmd.aliases.join(", ") + ")"
+  }
+
+  if cmd.description != "" {
+    line = line + " - " + cmd.description
+  }
+
+  line
+}
+
+fn _renderHelp() {
+  var out = ""
+  out = out + _name + " " + _version
+
+  if _description != "" {
+    out = out + "\n" + _description
+  }
+
+  if _usage == "" {
+    out = out + "\n\nUsage:\n  " + _name + " <command> [options] [args]"
+  } else {
+    out = out + "\n\nUsage:\n  " + _usage
+  }
+
+  out = out + "\n\nCommands:"
+  if _commands.length == 0 {
+    out = out + "\n  (none)"
+  } else {
+    each cmd in _commands {
+      out = out + "\n" + _renderCommandLine(cmd)
+    }
+  }
+
+  out = out + "\n\nFlags:\n  -h, --help\n  --version"
+
+  if _footer != "" {
+    out = out + "\n\n" + _footer
+  }
+
+  out
+}
+
+fn help() {
+  val text = _renderHelp()
+  io.log(text)
+  text
+}
+
+fn _invoke(cmd, args) {
+  cmd.handler(args)
+}
+
+fn run(argv) {
+  val args = parse(argv)
+
+  if args.versionRequested() {
+    io.log(_version)
+    _version
+  } else if args.helpRequested() {
+    help()
+  } else if args.command() == null {
+    if _defaultCommand != null {
+      val defaultCmd = _findCommand(_defaultCommand)
+      if defaultCmd != null {
+        _invoke(defaultCmd, args)
+      } else {
+        val mainCmd = _findCommand("main")
+        if mainCmd != null {
+          _invoke(mainCmd, args)
+        } else {
+          val helpCmd = _findCommand("help")
+          if helpCmd != null {
+            _invoke(helpCmd, args)
+          } else {
+            help()
+          }
+        }
+      }
+    } else {
+      val mainCmd = _findCommand("main")
+      if mainCmd != null {
+        _invoke(mainCmd, args)
+      } else {
+        val helpCmd = _findCommand("help")
+        if helpCmd != null {
+          _invoke(helpCmd, args)
+        } else {
+          help()
+        }
+      }
+    }
+  } else {
+    val cmd = _findCommand(args.command())
+    if cmd != null {
+      _invoke(cmd, args)
+    } else {
+      io.err("Unknown command: " + args.command())
+      help()
+    }
+  }
+}

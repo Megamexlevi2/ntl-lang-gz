@@ -1,0 +1,10 @@
+
+val io   = @import("std.io")
+val json = @import("std.json")
+
+fn main() {
+  io.log("valid1:", json.isValid("{\"ok\": true}"))
+  io.log("valid2:", json.isValid("[1, 2, 3]"))
+  io.log("invalid:", json.isValid("{ok: true}"))
+  io.log("PASS json_valid")
+}

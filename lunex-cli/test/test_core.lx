@@ -1,0 +1,48 @@
+val io  = @import("std.io")
+val cli = @fimport("../main.lx")
+
+var _passed = 0
+var _failed = 0
+
+fn _check(name, actual, expected) {
+  if actual == expected {
+    _passed = _passed + 1
+    io.log(io.green("  ok   "), name)
+  } else {
+    _failed = _failed + 1
+    io.log(io.red("  FAIL "), name)
+    io.log("         expected:", expected)
+    io.log("         actual:  ", actual)
+  }
+}
+
+fn _resetDemo() {
+  cli.reset()
+  cli.name("demo")
+  cli.version("1.2.3")
+  cli.description("Demo CLI")
+}
+
+fn run() {
+  io.log(io.bold("--- core tests ---"))
+  _resetDemo()
+
+  cli.command("hello", fn(args) {
+    io.log("hello:", args.get("name"))
+  }, "Say hello", ["hi"])
+
+  _check("name getter", cli.name(null), "demo")
+  _check("version getter", cli.version(null), "1.2.3")
+  _check("description getter", cli.description(null), "Demo CLI")
+  _check("command count", cli.commandCount(), 1)
+  _check("has command", cli.has("hello"), true)
+  _check("alias registered", cli.has("hi"), true)
+  _check("commands length", cli.commands().length, 1)
+
+  val found = cli.find("hello")
+  _check("find command name", found.name, "hello")
+  _check("find alias name", cli.find("hi").name, "hello")
+
+  io.log(io.green("core tests passed"))
+  _failed == 0
+}

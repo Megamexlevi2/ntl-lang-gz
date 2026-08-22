@@ -1,0 +1,13 @@
+
+val io = @import("std.io")
+fn apply(f, x)    { f(x) }
+fn compose(f, g)  { fn(x) { f(g(x)) } }
+fn main() {
+  val square  = fn(x) { x * x }
+  val negate  = fn(x) { x * -1 }
+  io.log("square(5):", square(5))
+  io.log("apply(square,6):", apply(square, 6))
+  val sqNeg = compose(negate, square)
+  io.log("sqNeg(4):", sqNeg(4))
+  io.log("PASS fn_first_class")
+}

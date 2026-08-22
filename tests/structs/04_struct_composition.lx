@@ -1,0 +1,26 @@
+
+val io = @import("std.io")
+fn Address(street, city) {
+  struct {
+    street = street
+    city   = city
+    fn format() { this.street + ", " + this.city }
+  }
+}
+fn Person(name, age, addr) {
+  struct {
+    name    = name
+    age     = age
+    address = addr
+    fn greet() { "Hi, I am " + this.name + " from " + this.address.city }
+    fn info()  { this.name + " (age " + str(this.age) + ") — " + this.address.format() }
+  }
+}
+fn main() {
+  val p1 = Person("Alice", 30, Address("10 Downing St", "London"))
+  val p2 = Person("Bob",   25, Address("1 Infinite Loop", "Cupertino"))
+  io.log(p1.greet())
+  io.log(p2.greet())
+  io.log(p1.info())
+  io.log("PASS struct_composition")
+}

@@ -1,0 +1,14 @@
+
+val io = @import("std.io")
+fn double(x)   { x * 2 }
+fn isEven(x)   { x % 2 == 0 }
+fn max2(a, b)  { if a > b { a } else { b } }
+fn describe(n) { if n > 0 { "positive" } else if n < 0 { "negative" } else { "zero" } }
+fn main() {
+  io.log("double(7):", double(7))
+  io.log("isEven(4):", isEven(4))
+  io.log("max2(3,9):", max2(3, 9))
+  io.log("describe(-5):", describe(-5))
+  io.log("describe(0):", describe(0))
+  io.log("PASS fn_implicit_return")
+}

@@ -1,0 +1,11 @@
+
+val io = @import("std.io")
+fn main() {
+  val rows = [
+    { name: "Alice",  role: "admin", score: 98 }
+    { name: "Bob",    role: "user",  score: 74 }
+    { name: "Carol",  role: "mod",   score: 85 }
+  ]
+  io.table(rows)
+  io.log("PASS io_table")
+}

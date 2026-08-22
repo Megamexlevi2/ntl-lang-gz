@@ -1,0 +1,23 @@
+
+val io    = @import("std.io")
+val utils = @import("std.utils")
+fn uniq(arr) {
+  var seen   = {}
+  var result = []
+  each item in arr {
+    val key = str(item)
+    if seen[key] == null {
+      seen[key] = true
+      result.push(item)
+    }
+  }
+  result
+}
+fn main() {
+  val dupes = [1, 2, 2, 3, 3, 3, 4]
+  io.log("unique:", uniq(dupes))
+  val nums = utils.range(1, 11)
+  val odds = nums.filter(fn(x) { x % 2 != 0 })
+  io.log("odds:", odds)
+  io.log("PASS loop_patterns")
+}

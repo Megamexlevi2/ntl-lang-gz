@@ -1,0 +1,14 @@
+
+val io    = @import("std.io")
+val utils = @import("std.utils")
+fn main() {
+  io.log("camelCase:", utils.camelCase("hello world from lunex"))
+  io.log("snakeCase:", utils.snakeCase("HelloWorldFromLunex"))
+  io.log("slugify:", utils.slugify("Hello, World!"))
+  io.log("toUpper:", "lunex lang".toUpperCase())
+  io.log("toLower:", "LUNEX LANG".toLowerCase())
+  io.log("trim:", "   spaces   ".trim())
+  io.log("contains:", "hello world".includes("world"))
+  io.log("startsWith:", "lunex".startsWith("lun"))
+  io.log("PASS utils_string")
+}

@@ -1,0 +1,13 @@
+
+val io = @import("std.io")
+fn getUser() { { name: "Bob", role: "admin", score: 99 } }
+fn main() {
+  val { name, role, score } = getUser()
+  io.log("name:", name)
+  io.log("role:", role)
+  io.log("score:", score)
+  val config = { host: "localhost", port: 8080, debug: true }
+  val { host, port } = config
+  io.log("host:", host, "port:", port)
+  io.log("PASS destructuring_objects")
+}

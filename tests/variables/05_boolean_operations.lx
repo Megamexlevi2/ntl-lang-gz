@@ -1,0 +1,15 @@
+
+val io = @import("std.io")
+fn main() {
+  val t = true
+  val f = false
+  io.log("t && f:", t && f)
+  io.log("t || f:", t || f)
+  io.log("!t:", !t)
+  val x = 5
+  io.log("x > 3:", x > 3)
+  io.log("x < 3:", x < 3)
+  io.log("x == 5:", x == 5)
+  io.log("x != 4:", x != 4)
+  io.log("PASS boolean_operations")
+}

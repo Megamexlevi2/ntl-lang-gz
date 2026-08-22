@@ -1,0 +1,11 @@
+
+val io = @import("std.io")
+fn isValid(x)  { x > 0 }
+fn isActive(x) { x < 100 }
+fn main() {
+  if false && true { io.log("both") } else { io.log("&& short-circuited") }
+  if true || false { io.log("|| short-circuited") }
+  val x = 50
+  if isValid(x) && isActive(x) { io.log("x is valid and active:", x) }
+  io.log("PASS short_circuit")
+}

@@ -1,0 +1,26 @@
+val io = @import("std.io")
+val math = @import("std.math")
+val utils = @import("std.utils")
+
+fn main() {
+  io.log("sqrt(2)    =", math.sqrt(2))
+  io.log("floor(3.7) =", math.floor(3.7))
+  io.log("abs(-5)    =", math.abs(-5))
+  io.log("pow(2, 10) =", math.pow(2, 10))
+  io.log("PI         =", math.PI)
+  io.log("E          =", math.E)
+  val s = "Hello, Lunex!"
+  io.log(s.toUpperCase())
+  io.log(s.toLowerCase())
+  io.log(s.replace("Lunex", "World"))
+  io.log(s.includes("Lunex"))
+  io.log(s.split(", ").join(" | "))
+  io.log("uuid:   ", utils.uuid())
+  io.log("chunk:  ", utils.chunk([1, 2, 3, 4, 5], 2))
+  io.log("uniq:   ", utils.uniq([1, 1, 2, 3, 3]))
+  io.log("sum:    ", utils.sum([1, 2, 3, 4, 5]))
+  io.log("clamp:  ", utils.clamp(15, 0, 10))
+  io.log("range:  ", utils.range(1, 6))
+  io.log("flatten:", utils.flatten([[1, 2], [3, 4], [5]]))
+  io.log("zip:    ", utils.zip([1, 2, 3], ["a", "b", "c"]))
+}

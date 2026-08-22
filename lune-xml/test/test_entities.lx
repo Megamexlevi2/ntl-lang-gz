@@ -1,0 +1,126 @@
+val io  = @import("std.io")
+val xml = @fimport("../main.lx")
+
+var _passed = 0
+var _failed = 0
+
+fn _check(name, actual, expected) {
+  if actual == expected {
+    _passed = _passed + 1
+    io.log(io.green("  ok   "), name)
+  } else {
+    _failed = _failed + 1
+    io.log(io.red("  FAIL "), name)
+    io.log("         expected:", expected)
+    io.log("         actual:  ", actual)
+  }
+}
+
+fn run() {
+  io.log(io.bold("--- entity & robustness tests ---"))
+
+  _passed = 0
+  _failed = 0
+
+  _check(
+    "decode &lt; &gt; &amp;",
+    xml.text(xml.parse("<m>1 &lt; 2 &amp; 3 &gt; 0</m>")),
+    "1 < 2 & 3 > 0"
+  )
+  _check(
+    "decode &quot; &apos;",
+    xml.text(xml.parse("<m>&quot;q&apos;</m>")),
+    "\"q'"
+  )
+
+  val numDoc = xml.parse("<m>copy &#169; 2024 &#x2764;</m>")
+  _check("numeric entity preserved on parse", xml.text(numDoc), "copy &#169; 2024 &#x2764;")
+  _check("numeric entity stable on re-serialize", xml.buildFragment(numDoc), "<m>copy &#169; 2024 &#x2764;</m>")
+
+  val attrDoc = xml.parse("<a href=\"foo?x=1&amp;y=2\">link</a>")
+  _check("attribute entity decode", xml.attr(attrDoc, "href"), "foo?x=1&y=2")
+
+  val escNode = xml.createElementWithAttrs("a", { title: "say \"hi\" & 'bye' <now>" })
+  _check(
+    "attribute escaping covers all occurrences",
+    xml.buildFragment(escNode),
+    "<a title=\"say &quot;hi&quot; &amp; 'bye' &lt;now&gt;\" />"
+  )
+
+  val n = xml.createElementWithAttrs("a", { href: "x.html?a=1&b=2", title: "He said \"hi\"" })
+  xml.appendChild(n, xml.createTextElement("label", "A & B < C > D"))
+  val out1 = xml.buildFragment(n)
+  val out2 = xml.buildFragment(xml.parse(out1))
+  _check("build -> parse -> build is stable", out2, out1)
+
+  val cdoc = xml.parse("<root><!-- a > b --><item>ok</item></root>")
+  _check("comment with > inside is skipped cleanly", cdoc.childCount(), 1)
+  _check("comment with > leaves no stray text", cdoc.getText(), "")
+  _check("element after such a comment is intact", xml.text(xml.selectFirst(cdoc, "item")), "ok")
+
+  val cdoc2 = xml.parse("<root><!-- just a > comment --></root>")
+  _check("comment-only element has no text", cdoc2.getText(), "")
+  _check("comment-only element has no children", cdoc2.childCount(), 0)
+
+  val cdataDoc = xml.parse("<root><![CDATA[<b>raw</b> & stuff]]></root>")
+  _check("CDATA content preserved raw (not parsed as markup)", xml.text(cdataDoc), "<b>raw</b> & stuff")
+  _check("CDATA flag set when parsed", cdataDoc.isCData(), true)
+
+  val cdataNode = xml.createCDataElement("script", "if (a < b && c > 1) { ok(); }")
+  _check(
+    "CDATA build output uses <![CDATA[ ]]>",
+    xml.buildFragment(cdataNode),
+    "<script><![CDATA[if (a < b && c > 1) { ok(); }]]></script>"
+  )
+  val cdataRT = xml.parse(xml.buildFragment(cdataNode))
+  _check("CDATA round trip preserves text", xml.text(cdataRT), xml.text(cdataNode))
+
+  val weirdCData = xml.createCDataElement("data", "weird ]]> end")
+  _check(
+    "CDATA containing ]]> falls back to escaped text",
+    xml.buildFragment(weirdCData),
+    "<data>weird ]]&gt; end</data>"
+  )
+
+  val piDoc = xml.parse("<root><?pi data?><item>x</item></root>")
+  _check("PI child is skipped, root keeps 1 real child", piDoc.childCount(), 1)
+  _check("PI doesn't get parsed as the next tag", piDoc.children[0].tag, "item")
+  _check("element after a PI keeps its text", xml.text(piDoc.children[0]), "x")
+
+  val dtdSrc = "<!DOCTYPE note [ <!ENTITY foo \"bar\"> ]><note>hi</note>"
+  val dtdDoc = xml.parse(dtdSrc)
+  _check("DOCTYPE with internal subset doesn't break parsing", dtdDoc.tag, "note")
+  _check("DOCTYPE doesn't swallow the element's text", xml.text(dtdDoc), "hi")
+
+  val fullSrc = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<!-- top comment -->\n" +
+                "<!DOCTYPE note>\n" +
+                "<note>hello</note>"
+  _check("XML decl + comment + DOCTYPE all skipped", xml.parse(fullSrc).tag, "note")
+
+  val a1 = xml.buildFragment(xml.createElementWithAttrs("a", { zeta: "1", alpha: "2", mid: "3" }))
+  val a2 = xml.buildFragment(xml.createElementWithAttrs("a", { zeta: "1", alpha: "2", mid: "3" }))
+  _check("createElementWithAttrs is deterministic across calls", a1, a2)
+  _check("createElementWithAttrs sorts attribute names", a1, "<a alpha=\"2\" mid=\"3\" zeta=\"1\" />")
+
+  val pairsNode = xml.createElementWithAttrPairs("img", [["src", "a.png"], ["alt", "A"]])
+  _check(
+    "createElementWithAttrPairs preserves given order",
+    xml.buildFragment(pairsNode),
+    "<img src=\"a.png\" alt=\"A\" />"
+  )
+
+  val compactNode = xml.createElement("a")
+  xml.setAttribute(compactNode, "x", "1")
+  xml.appendChild(compactNode, xml.createTextElement("b", "hi"))
+  _check("buildFragmentCompact is single-line", xml.buildFragmentCompact(compactNode), "<a x=\"1\"><b>hi</b></a>")
+
+  io.log("")
+  if _failed == 0 {
+    io.log(io.green("entity & robustness tests passed (" + str(_passed) + "/" + str(_passed) + ")"))
+  } else {
+    io.log(io.red("entity & robustness tests FAILED (" + str(_failed) + "/" + str(_passed + _failed) + " checks failed)"))
+  }
+
+  _failed == 0
+}

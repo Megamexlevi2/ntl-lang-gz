@@ -1,0 +1,12 @@
+
+val io    = @import("std.io")
+val utils = @import("std.utils")
+fn main() {
+  io.log("range(5):", utils.range(5))
+  io.log("range(3,8):", utils.range(3, 8))
+  val r = utils.range(10)
+  io.log("squares:", r.map(fn(x) { x * x }))
+  io.log("evens:", utils.range(1, 21).filter(fn(x) { x % 2 == 0 }))
+  io.log("sum 1-10:", utils.range(1, 11).reduce(fn(acc, x) { acc + x }, 0))
+  io.log("PASS utils_range")
+}

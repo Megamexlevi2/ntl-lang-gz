@@ -1,0 +1,24 @@
+
+val io = @import("std.io")
+fn dayName(d) {
+  match d {
+    1 => "Monday"   2 => "Tuesday"  3 => "Wednesday"
+    4 => "Thursday" 5 => "Friday"   6 => "Saturday"
+    7 => "Sunday"   _ => "unknown"
+  }
+}
+fn httpStatus(code) {
+  match code {
+    200 => "OK"  201 => "Created"  400 => "Bad Request"
+    401 => "Unauthorized"  403 => "Forbidden"  404 => "Not Found"
+    500 => "Internal Server Error"  _ => "Unknown"
+  }
+}
+fn main() {
+  var i = 1
+  while i <= 7 { io.log("day", i, "=", dayName(i)); i = i + 1 }
+  io.log("200:", httpStatus(200))
+  io.log("404:", httpStatus(404))
+  io.log("999:", httpStatus(999))
+  io.log("PASS match_basic")
+}

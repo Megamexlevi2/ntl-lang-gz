@@ -1,0 +1,18 @@
+val io = @import("std.io"); val ints = @import("std.ints")
+fn main() {
+  io.log("shlU32(1, 31):", ints.shlU32(1, 31))
+  io.log("shrU32(4294967295, 28):", ints.shrU32(4294967295, 28))
+  io.log("rotlU32(1, 1):", ints.rotlU32(1, 1))
+  io.log("rotrU32(1, 1):", ints.rotrU32(1, 1))
+  io.log("shlU64(1, 63):", ints.shlU64(1, 63))
+
+  io.log("12 & 10:", 12 & 10)
+  io.log("12 | 10:", 12 | 10)
+  io.log("12 ^ 10:", 12 ^ 10)
+  io.log("~0:", ~0)
+  io.log("1 << 4:", 1 << 4)
+  io.log("256 >> 4:", 256 >> 4)
+  io.log("-1 >>> 28:", -1 >>> 28)
+
+  io.log("PASS ints_bitwise")
+}

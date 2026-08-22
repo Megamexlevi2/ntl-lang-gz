@@ -1,0 +1,15 @@
+
+val io    = @import("std.io")
+val utils = @import("std.utils")
+fn main() {
+  val nums = [5, 3, 8, 1, 9, 2, 7, 4, 6]
+  io.log("sorted:", nums.sort())
+  io.log("reversed:", nums.reverse())
+  io.log("slice(2,5):", nums.slice(2, 5))
+  io.log("join:", ["a", "b", "c"].join("-"))
+  io.log("doubled:", nums.map(fn(x) { x * 2 }))
+  io.log("evens:", nums.filter(fn(x) { x % 2 == 0 }))
+  io.log("sum:", nums.reduce(fn(acc, x) { acc + x }, 0))
+  io.log("sortBy desc:", utils.sortBy(nums, fn(x) { 0 - x }))
+  io.log("PASS utils_array")
+}

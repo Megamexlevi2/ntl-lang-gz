@@ -1,0 +1,125 @@
+val nodeLib  = @fimport("./node.lx")
+val entities = @fimport("./entities.lx")
+
+fn _attrsToString(n) {
+  var result = ""
+  var seen    = {}
+
+  each k in n.attrOrder {
+    if n.attrs[k] != null {
+      result   = result + " " + k + "=\"" + entities.escapeAttr(str(n.attrs[k])) + "\""
+      seen[k]  = true
+    }
+  }
+
+  var extra = []
+  val allKeys = Object.keys(n.attrs)
+  each k in allKeys {
+    unless seen[k] != null {
+      extra.push(k)
+    }
+  }
+  extra = extra.sort()
+  each k in extra {
+    result = result + " " + k + "=\"" + entities.escapeAttr(str(n.attrs[k])) + "\""
+  }
+
+  result
+}
+
+fn _indent(depth) {
+  var s = ""
+  var i = 0
+  while i < depth {
+    s = s + "  "
+    i = i + 1
+  }
+  s
+}
+
+fn _serialize(n, depth) {
+  val pad     = _indent(depth)
+  val attrStr = _attrsToString(n)
+
+  if n.hasChildren() {
+    var inner = ""
+    each child in n.children {
+      inner = inner + "\n" + _serialize(child, depth + 1)
+    }
+    pad + "<" + n.tag + attrStr + ">" + inner + "\n" + pad + "</" + n.tag + ">"
+  } else if n.text.length > 0 {
+    if n.isCData() and !n.text.includes("]]>") {
+      pad + "<" + n.tag + attrStr + "><![CDATA[" + n.text + "]]></" + n.tag + ">"
+    } else {
+      pad + "<" + n.tag + attrStr + ">" + entities.escapeText(n.text) + "</" + n.tag + ">"
+    }
+  } else {
+    pad + "<" + n.tag + attrStr + " />"
+  }
+}
+
+fn _serializeCompact(n) {
+  val attrStr = _attrsToString(n)
+
+  if n.hasChildren() {
+    var inner = ""
+    each child in n.children {
+      inner = inner + _serializeCompact(child)
+    }
+    "<" + n.tag + attrStr + ">" + inner + "</" + n.tag + ">"
+  } else if n.text.length > 0 {
+    if n.isCData() and !n.text.includes("]]>") {
+      "<" + n.tag + attrStr + "><![CDATA[" + n.text + "]]></" + n.tag + ">"
+    } else {
+      "<" + n.tag + attrStr + ">" + entities.escapeText(n.text) + "</" + n.tag + ">"
+    }
+  } else {
+    "<" + n.tag + attrStr + " />"
+  }
+}
+
+fn build(root) {
+  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + _serialize(root, 0)
+}
+
+fn buildFragment(n) {
+  _serialize(n, 0)
+}
+
+fn buildCompact(root) {
+  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + _serializeCompact(root)
+}
+
+fn buildFragmentCompact(n) {
+  _serializeCompact(n)
+}
+
+fn createElement(tag) {
+  nodeLib.newNode(tag)
+}
+
+fn createTextElement(tag, text) {
+  nodeLib.newTextNode(tag, text)
+}
+
+fn createCDataElement(tag, text) {
+  nodeLib.newCDataNode(tag, text)
+}
+
+fn createElementWithAttrs(tag, attrs) {
+  val n    = nodeLib.newNode(tag)
+  var keys = Object.keys(attrs)
+  keys     = keys.sort()
+  each k in keys {
+    n.setAttribute(k, attrs[k])
+  }
+  n
+}
+
+fn createElementWithAttrPairs(tag, pairs) {
+  val n = nodeLib.newNode(tag)
+  each pair in pairs {
+    n.setAttribute(pair[0], pair[1])
+  }
+  n
+}

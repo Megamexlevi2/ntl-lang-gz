@@ -1,0 +1,14 @@
+
+val io = @import("std.io")
+fn factorial(n) { if n <= 1 { 1 } else { n * factorial(n - 1) } }
+fn fibonacci(n) { if n <= 1 { n } else { fibonacci(n - 1) + fibonacci(n - 2) } }
+fn main() {
+  io.log("5! =", factorial(5))
+  io.log("10! =", factorial(10))
+  var i = 0
+  while i <= 8 {
+    io.log("fib(" + str(i) + ") =", fibonacci(i))
+    i = i + 1
+  }
+  io.log("PASS fn_recursion")
+}

@@ -1,0 +1,24 @@
+
+val io = @import("std.io")
+fn grade(score) {
+  if score >= 90 { "excellent" }
+  else if score >= 80 { "great" }
+  else if score >= 70 { "good" }
+  else if score >= 60 { "fair" }
+  else { "needs improvement" }
+}
+fn main() {
+  val score = 85
+  val label = grade(score)
+  io.log("score", score, "→", label)
+  each item in ["apple", "banana", "carrot"] {
+    val cat = match item {
+      "apple"  => "fruit"
+      "banana" => "fruit"
+      "carrot" => "vegetable"
+      _ => "unknown"
+    }
+    io.log(item, "→", cat)
+  }
+  io.log("PASS match_expression")
+}

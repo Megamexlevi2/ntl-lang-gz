@@ -1,0 +1,10 @@
+
+val io = @import("std.io")
+fn main() {
+  io.log("this is a log message")
+  io.warn("this is a warning")
+  io.err("this is an error")
+  io.info("this is info")
+  io.success("this is a success")
+  io.log("PASS io_log_levels")
+}

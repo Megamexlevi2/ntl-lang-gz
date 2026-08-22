@@ -1,0 +1,25 @@
+
+val io = @import("std.io")
+fn memoize(f) {
+  val cache = struct {}
+  fn(n) {
+    val key = str(n)
+    if cache[key] {
+      cache[key]
+    } else {
+      val v = f(n)
+      cache[key] = v
+      v
+    }
+  }
+}
+fn fib(n) { if n <= 1 { n } else { fib(n - 1) + fib(n - 2) } }
+fn main() {
+  val mfib = memoize(fib)
+  io.log("fib(10):", mfib(10))
+  io.log("fib(15):", mfib(15))
+  val sq = memoize(fn(x) { x * x })
+  io.log("sq(7):", sq(7))
+  io.log("sq(7) cached:", sq(7))
+  io.log("PASS fn_memoize")
+}

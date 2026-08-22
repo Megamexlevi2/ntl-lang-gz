@@ -1,0 +1,34 @@
+
+val io = @import("std.io")
+fn compose(mws, handler) {
+  fn(req) {
+    fn run(i, r) {
+      if i >= mws.length {
+        handler(r)
+      } else {
+        mws[i](r, fn(r2) { run(i + 1, r2) })
+      }
+    }
+    run(0, req)
+  }
+}
+fn logMw(req, next) {
+  io.log("[log]", req.path)
+  next(req)
+}
+fn authMw(req, next) {
+  if !req.auth {
+    { status: 401, body: "Unauthorized" }
+  } else {
+    next(req)
+  }
+}
+fn handler(req) { { status: 200, body: "OK: " + req.path } }
+fn main() {
+  val app = compose([logMw, authMw], handler)
+  val r1  = app({ path: "/api/data",   auth: true })
+  io.log("r1:", r1.status, r1.body)
+  val r2  = app({ path: "/api/secret", auth: false })
+  io.log("r2:", r2.status, r2.body)
+  io.log("PASS middleware")
+}

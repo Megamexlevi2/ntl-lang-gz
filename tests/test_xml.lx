@@ -1,0 +1,28 @@
+
+val io  = @import("std.io")
+val xml = @import("lune-xml")
+val fs  = @import("std.fs")
+
+fn main() {
+  val badXml = "<root><child>text</root>"
+
+  try {
+    val doc = xml.parse(badXml)
+    io.log("Parsed (should not have!)")
+  } catch err {
+    io.log(io.yellow("✓ Caught parse error: " + str(err)))
+  }
+
+  val goodXml = "<root><child attr='value'>text</child></root>"
+
+  try {
+    val doc = xml.parse(goodXml)
+    io.log("Parsed with single-quote attributes (expected)")
+    io.log(io.green("✓ Single-quote attributes work"))
+  } catch err {
+    io.log(io.red("✗ Failed to parse: " + str(err)))
+  }
+
+  fs.writeFile("test_parse.txt", "Test complete")
+  io.log(io.green("✓ XML parsing test complete"))
+}

@@ -1,0 +1,11 @@
+
+val io = @import("std.io"); val crypto = @import("std.crypto")
+fn main() {
+  val key  = "secret-key"
+  val data = "payload:user=alice"
+  val sig  = crypto.hmac(key, data)
+  io.log("sig:", sig)
+  io.log("deterministic:", sig == crypto.hmac(key, data))
+  io.log("key matters:", sig != crypto.hmac("wrong", data))
+  io.log("PASS crypto_hmac")
+}
