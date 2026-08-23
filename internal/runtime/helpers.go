@@ -27,10 +27,11 @@ func paramsToFnParams(params []*ast.Param) []FnParam {
 	result := make([]FnParam, len(params))
 	for i, p := range params {
 		result[i] = FnParam{
-			Name:        p.Name,
-			Default:     p.DefaultVal,
-			Rest:        p.Rest,
-			Destructure: p.Destructure,
+			Name:         p.Name,
+			Default:      p.DefaultVal,
+			Rest:         p.Rest,
+			Destructure:  p.Destructure,
+			ResolvedSlot: p.ResolvedSlot,
 		}
 	}
 	return result

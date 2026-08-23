@@ -112,6 +112,21 @@ func (interp *Interpreter) evalNumber(val interface{}) (*Value, error) {
 	return NumberVal(f), nil
 }
 
+// evalNumberCached parses a NumberLit node's textual value once and stores
+// the result directly on the node, so every later evaluation of the same
+// literal (e.g. inside a hot loop) skips string parsing and the numCache
+// lookup entirely. Falls back to evalNumber's parsing logic for the actual
+// conversion, but only ever runs it once per distinct AST node.
+func (interp *Interpreter) evalNumberCached(node *ast.Node) (*Value, error) {
+	val, err := interp.evalNumber(node.Value)
+	if err != nil {
+		return val, err
+	}
+	f := val.NumVal
+	node.NumCache = &f
+	return val, nil
+}
+
 var templateBuilderPool = sync.Pool{New: func() any { return new(strings.Builder) }}
 
 func (interp *Interpreter) evalTemplate(node *ast.Node, env *Environment) (*Value, error) {
@@ -330,6 +345,9 @@ func (interp *Interpreter) evalIdentifier(node *ast.Node, env *Environment) (*Va
 		return NumberVal(math.NaN()), nil
 	case "Infinity":
 		return NumberVal(math.Inf(1)), nil
+	}
+	if addr := node.ResolvedAddr; addr != nil {
+		return env.GetSlotAddr(addr.Hops, addr.Slot), nil
 	}
 	val, ok := env.Get(name)
 	if !ok {

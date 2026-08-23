@@ -3,6 +3,8 @@ package runtime
 import (
 	"lunex/internal/ast"
 	"lunex/internal/errfmt"
+	"os"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -45,12 +47,43 @@ type Interpreter struct {
 	spawnSlots    chan struct{}
 }
 
+// defaultMaxExecSteps caps how many AST nodes a script may evaluate
+// before the interpreter aborts it as a likely infinite loop or
+// runaway recursion (see consumeExecutionBudget in limits.go). Each
+// executed statement and each evaluated sub-expression both count as
+// one step, so a single loop iteration like `i = i + 1` typically
+// costs several steps, not one — a plain `while` counting to a few
+// hundred thousand can legitimately use millions of steps. This
+// default is sized to comfortably clear that kind of ordinary,
+// non-recursive workload while still catching genuine runaway
+// recursion (which blows through any reasonable budget almost
+// immediately, since each recursive call multiplies the remaining
+// work rather than just adding to it).
+//
+// Set LUNEX_MAX_STEPS to override this at runtime, e.g. for a script
+// that legitimately needs to run longer, or set it to 0 to disable
+// the budget entirely and rely on other limits (spawn slots, host
+// timeouts) instead.
+const defaultMaxExecSteps = 200_000_000
+
+func resolveMaxExecSteps() int64 {
+	raw := strings.TrimSpace(os.Getenv("LUNEX_MAX_STEPS"))
+	if raw == "" {
+		return defaultMaxExecSteps
+	}
+	n, err := strconv.ParseInt(raw, 10, 64)
+	if err != nil || n < 0 {
+		return defaultMaxExecSteps
+	}
+	return n
+}
+
 func NewInterpreter() *Interpreter {
 	interp := &Interpreter{
 		globals:      NewEnvironment(nil),
 		profiler:     NewProfiler(),
 		modules:      make(map[string]*Value),
-		maxExecSteps: 2_000_000,
+		maxExecSteps: resolveMaxExecSteps(),
 		spawnSlots:   make(chan struct{}, 256),
 	}
 	interp.registerBuiltins()

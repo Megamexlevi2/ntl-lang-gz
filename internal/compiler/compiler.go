@@ -8,6 +8,7 @@ import (
 	"lunex/internal/lexer"
 	"lunex/internal/meta"
 	"lunex/internal/parser"
+	"lunex/internal/resolver"
 	"lunex/internal/runtime"
 	"os"
 	"path/filepath"
@@ -125,6 +126,8 @@ func (c *Compiler) CompileSource(source, filename string) *CompileResult {
 		result.Time = time.Since(start)
 		return result
 	}
+
+	resolver.Resolve(tree)
 
 	_ = typesEnabled
 

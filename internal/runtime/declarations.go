@@ -16,6 +16,13 @@ func (interp *Interpreter) execVarDecl(node *ast.Node, env *Environment) (*Value
 	if node.Destructure != nil {
 		return Undefined, interp.bindDestructure(node.Destructure, val, env)
 	}
+	if addr := node.ResolvedAddr; addr != nil {
+		// VarDecl always declares into its own frame (Hops is always 0 --
+		// see internal/resolver's VarDecl case), so this is always a
+		// same-frame slot write.
+		env.DefineSlot(addr.Hops, addr.Slot, node.Name, val, node.IsConst)
+		return Undefined, nil
+	}
 	env.Define(node.Name, val, node.IsConst)
 	return Undefined, nil
 }

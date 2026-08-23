@@ -39,6 +39,11 @@ func init() {
 }
 
 func tuneGC() {
+	if adaptor.AndroidTuningApplied() {
+		goruntime.LockOSThread()
+		goruntime.UnlockOSThread()
+		return
+	}
 	if os.Getenv("GOGC") == "" {
 		debug.SetGCPercent(50)
 	}
@@ -1630,8 +1635,75 @@ func printEnv() {
 	}
 }
 
+// printHelpCompact renders a narrower, single-column version of the
+// help text for small terminals (a typical Termux window on a phone
+// is 40-60 columns, well under the ~90 the full two-column help
+// assumes). Command and description stack instead of sitting side by
+// side, so nothing wraps mid-word into an unreadable jumble.
+func printHelpCompact() {
+	type entry struct{ cmd, desc string }
+	sections := []struct {
+		title   string
+		entries []entry
+	}{
+		{"Usage", []entry{
+			{"lunex run <file>", "run a .lx source or .nax archive"},
+			{"lunex start", "run the project entry from lunex.toml"},
+			{"lunex debug <file>", "run with full diagnostics + stack trace"},
+			{"lunex -e \"<code>\"", "run a code snippet directly"},
+			{"lunex repl", "start the interactive REPL"},
+			{"lunex build [file] [-o]", "compile the project entry"},
+			{"lunex check <file>", "check for errors without running"},
+			{"lunex dis <file.nax>", "inspect a .nax archive"},
+			{"lunex init [name]", "create a new project folder"},
+			{"lunex pack <dir>", "bundle a directory to .nax"},
+			{"lunex unpack <file.nax>", "extract a .nax archive"},
+			{"lunex cache [clear]", "show or clear the on-disk cache"},
+			{"lunex platform", "show platform / adapter diagnostics"},
+			{"lunex bench <file>", "run with timing output"},
+			{"lunex env", "show module store paths and status"},
+			{"lunex version", "print version"},
+			{"lunex help", "show this help"},
+		}},
+		{"Modules", []entry{
+			{"@import(\"std.io\")", "standard library module"},
+			{"@import(\"pkg-name\")", "installed library"},
+			{"@fimport(\"./f.nax\")", "local .nax archive file"},
+			{"@fimport(\"./f.lx\")", "local .lx source file"},
+		}},
+		{"Dependencies", []entry{
+			{"lunex install", "install all lunex.toml libraries"},
+			{"lunex add <url>[@v]", "add + install a dependency"},
+			{"lunex remove <lib>", "remove an installed library"},
+			{"lunex update [lib]", "re-resolve one or all libraries"},
+			{"lunex list", "list installed libraries"},
+		}},
+	}
+
+	for _, s := range sections {
+		fmt.Printf("%s:\n", s.title)
+		for _, e := range s.entries {
+			fmt.Printf("  %s\n      %s\n", e.cmd, e.desc)
+		}
+		fmt.Println()
+	}
+
+	fmt.Print(`Flags: --debug/-d  --verbose/-V  --no-cache
+
+Run 'lunex help' in a wider terminal for the full reference,
+including the standard library module list.
+
+`)
+}
+
 func printHelp() {
 	fmt.Printf("Lunex %s\n\n", meta.Version())
+
+	if adaptor.TerminalWidth() < 64 {
+		printHelpCompact()
+		return
+	}
+
 	fmt.Print(`Usage:
   lunex run <file> [--emit ast|ir]   run a .lx source or .nax archive
   lunex start                        run the project entry from lunex.toml
@@ -2034,9 +2106,25 @@ func printReplError(err error, src string) {
 
 func printReplBanner() {
 	v := meta.Version()
-	fmt.Printf("\n  %s%sLunex %s%s  — interactive REPL\n", replBold, replCyan, v, replReset)
+
+	width := adaptor.TerminalWidth()
+	ruleWidth := width - 2
+	if ruleWidth > 56 {
+		ruleWidth = 56
+	}
+	if ruleWidth < 10 {
+		ruleWidth = 10
+	}
+	rule := replDim + strings.Repeat("─", ruleWidth) + replReset
+
+	fmt.Printf("\n  %s\n", rule)
+	fmt.Printf("  %s%sLunex %s%s  — interactive REPL\n", replBold, replCyan, v, replReset)
+	if adaptor.IsAndroidLike() {
+		fmt.Printf("  %srunning on %s%s\n", replDim, adaptor.Current.String(), replReset)
+	}
 	fmt.Printf("  %sType Lunex code and press Enter to evaluate.%s\n", replDim, replReset)
-	fmt.Printf("  %s.help for commands  ·  .exit or Ctrl+D to quit%s\n\n", replDim, replReset)
+	fmt.Printf("  %s.help for commands  ·  .exit or Ctrl+D to quit%s\n", replDim, replReset)
+	fmt.Printf("  %s\n\n", rule)
 }
 
 func printReplBye() {

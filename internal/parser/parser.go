@@ -601,7 +601,7 @@ func (p *Parser) parseFnParams() ([]*ast.Param, error) {
 	}
 	var params []*ast.Param
 	for !p.check(lexer.PUNCTUATION, ")") && !p.check(lexer.EOF, "") {
-		param := &ast.Param{}
+		param := &ast.Param{ResolvedSlot: -1}
 		if p.check(lexer.OPERATOR, "...") {
 			p.advance()
 			param.Rest = true
@@ -2766,7 +2766,7 @@ func (p *Parser) lookAheadArrow() bool {
 func (p *Parser) parseArrowParams() ([]*ast.Param, error) {
 	var params []*ast.Param
 	for !p.check(lexer.PUNCTUATION, ")") && !p.check(lexer.EOF, "") {
-		param := &ast.Param{}
+		param := &ast.Param{ResolvedSlot: -1}
 		if p.check(lexer.OPERATOR, "...") {
 			p.advance()
 			param.Rest = true

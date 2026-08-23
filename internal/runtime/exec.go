@@ -256,6 +256,33 @@ func valueToGo(v *Value) interface{} {
 	}
 }
 
+// blockNeedsOwnScope reports whether a Block node declares any bindings
+// directly in its own body (var/const/fn/class/etc). The result is computed
+// once per distinct AST node and cached, since the answer never changes for
+// a given piece of source.
+func blockNeedsOwnScope(node *ast.Node) bool {
+	if node.NeedsScopeCache != nil {
+		return *node.NeedsScopeCache
+	}
+	needs := false
+	for _, stmt := range node.Body_ {
+		if stmt == nil {
+			continue
+		}
+		switch stmt.Type {
+		case ast.VarDecl, ast.ImmutableDecl, ast.UsingDecl,
+			ast.FnDecl, ast.ClassDecl, ast.EnumDecl, ast.NamespaceDecl,
+			ast.ComponentDecl:
+			needs = true
+		}
+		if needs {
+			break
+		}
+	}
+	node.NeedsScopeCache = &needs
+	return needs
+}
+
 func (interp *Interpreter) execBlock(stmts []*ast.Node, env *Environment) (*Value, error) {
 	var result *Value = Undefined
 	for _, stmt := range stmts {
@@ -285,8 +312,16 @@ func (interp *Interpreter) execNode(node *ast.Node, env *Environment) (*Value, e
 	case ast.Program:
 		return interp.execBlock(node.Body_, env)
 	case ast.Block:
+		if !blockNeedsOwnScope(node) {
+			// No declarations of its own: safe to run directly in the
+			// parent's Environment, skipping the pool round-trip. This is
+			// the common case for tight loop bodies like `{ i = i + 1 }`.
+			return interp.execBlock(node.Body_, env)
+		}
 		childEnv := NewEnvironment(env)
-		return interp.execBlock(node.Body_, childEnv)
+		result, err := interp.execBlock(node.Body_, childEnv)
+		ReleaseEnvironment(childEnv)
+		return result, err
 	case ast.VarDecl:
 		return interp.execVarDecl(node, env)
 	case ast.FnDecl:

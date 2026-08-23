@@ -48,8 +48,8 @@ var Undefined = &Value{Tag: TypeUndefined}
 var True = &Value{Tag: TypeBool, BoolVal: true}
 var False = &Value{Tag: TypeBool, BoolVal: false}
 
-const intPoolMin = -1
-const intPoolMax = 255
+const intPoolMin = -1024
+const intPoolMax = 65535
 
 var intPool [intPoolMax - intPoolMin + 1]*Value
 
@@ -503,10 +503,11 @@ type Function struct {
 }
 
 type FnParam struct {
-	Name        string
-	Default     interface{}
-	Rest        bool
-	Destructure interface{}
+	Name         string
+	Default      interface{}
+	Rest         bool
+	Destructure  interface{}
+	ResolvedSlot int
 }
 
 type Class struct {

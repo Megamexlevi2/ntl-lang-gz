@@ -20,7 +20,10 @@ func (interp *Interpreter) evalExpr(node *ast.Node, env *Environment) (*Value, e
 	}
 	switch node.Type {
 	case ast.NumberLit:
-		return interp.evalNumber(node.Value)
+		if node.NumCache != nil {
+			return NumberVal(*node.NumCache), nil
+		}
+		return interp.evalNumberCached(node)
 	case ast.StringLit:
 		s, _ := node.Value.(string)
 		return StringVal(s), nil
@@ -587,7 +590,13 @@ func (interp *Interpreter) evalBinaryValues(left, right *Value, op string) (*Val
 func (interp *Interpreter) assignToNode(target *ast.Node, val *Value, env *Environment) error {
 	switch target.Type {
 	case ast.Identifier:
-		if err := env.Set(target.Name, val); err != nil {
+		var err error
+		if addr := target.ResolvedAddr; addr != nil {
+			err = env.SetSlot(addr.Hops, addr.Slot, target.Name, val)
+		} else {
+			err = env.Set(target.Name, val)
+		}
+		if err != nil {
 			if le, ok := err.(*errfmt.LunexError); ok {
 				if le.Line == 0 {
 					le.File = interp.filename

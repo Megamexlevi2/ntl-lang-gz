@@ -6,6 +6,7 @@ import (
 	"lunex/internal/errfmt"
 	"lunex/internal/lexer"
 	"lunex/internal/parser"
+	"lunex/internal/resolver"
 	"os"
 	"path/filepath"
 	"strings"
@@ -270,6 +271,7 @@ func (interp *Interpreter) evalModuleSource(src, name string) (*Value, error) {
 		return nil, interp.runtimeError(errfmt.KindImport, "E0011",
 			fmt.Sprintf("failed to parse module '%s': %v", name, err), nil, nil)
 	}
+	resolver.Resolve(prog)
 	interp.libLoadDepth++
 	modEnv := NewEnvironment(interp.globals)
 	_, execErr := interp.execBlock(prog.Body_, modEnv)

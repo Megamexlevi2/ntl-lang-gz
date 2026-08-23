@@ -2,11 +2,108 @@ package errfmt
 
 import (
 	"fmt"
+	"lunex/internal/adaptor"
 	"os"
 	"strings"
 )
 
 var useColor = os.Getenv("NO_COLOR") == "" && os.Getenv("TERM") != "dumb"
+
+// termWidth is resolved once per error print via terminalWidth() rather
+// than looked up on every call, since stty size shells out to a
+// subprocess and error formatting can build many small strings in a
+// single call to Format.
+func terminalWidth() int {
+	return adaptor.TerminalWidth()
+}
+
+// wrapText wraps plain text (no ANSI codes) to the given width,
+// breaking on spaces and never mid-word. It's used for free-form
+// prose — messages, hints, notes — where breaking cleanly at a column
+// matters most on narrow phone terminals; the source-code frame in
+// buildSourceView is left alone since it must stay aligned with actual
+// column positions in the user's code.
+func wrapText(text string, width int) []string {
+	if width <= 0 {
+		return []string{text}
+	}
+	words := strings.Fields(text)
+	if len(words) == 0 {
+		return []string{text}
+	}
+
+	var lines []string
+	var cur strings.Builder
+	curLen := 0
+	for _, word := range words {
+		wordLen := len(word)
+		if curLen == 0 {
+			cur.WriteString(word)
+			curLen = wordLen
+			continue
+		}
+		if curLen+1+wordLen > width {
+			lines = append(lines, cur.String())
+			cur.Reset()
+			cur.WriteString(word)
+			curLen = wordLen
+			continue
+		}
+		cur.WriteByte(' ')
+		cur.WriteString(word)
+		curLen += 1 + wordLen
+	}
+	if curLen > 0 {
+		lines = append(lines, cur.String())
+	}
+	return lines
+}
+
+// wrapIndented wraps text to fit the terminal and re-joins it with a
+// hanging indent equal to len(prefix), so continuation lines line up
+// under the first word rather than under the left margin. prefix
+// itself may contain ANSI color codes; only its visible length (via
+// visibleLen) is used for alignment math.
+func wrapIndented(prefix, text string) string {
+	width := terminalWidth() - visibleLen(prefix)
+	if width < 20 {
+		return prefix + text
+	}
+	wrapped := wrapText(text, width)
+	if len(wrapped) <= 1 {
+		return prefix + text
+	}
+	pad := strings.Repeat(" ", visibleLen(prefix))
+	out := prefix + wrapped[0]
+	for _, line := range wrapped[1:] {
+		out += "\n" + pad + line
+	}
+	return out
+}
+
+// visibleLen returns the length of s as it would appear on screen,
+// ignoring ANSI escape sequences produced by esc(). It assumes each
+// escape sequence has the form "\x1b[...m", which covers every color
+// helper in this file.
+func visibleLen(s string) int {
+	n := 0
+	inEscape := false
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if inEscape {
+			if c == 'm' {
+				inEscape = false
+			}
+			continue
+		}
+		if c == '\x1b' {
+			inEscape = true
+			continue
+		}
+		n++
+	}
+	return n
+}
 
 func esc(code, t string) string {
 	if !useColor {
@@ -980,7 +1077,8 @@ func Format(err *LunexError) string {
 
 	var out []string
 	out = append(out, "")
-	out = append(out, meta.color(bold(meta.icon+" "+label))+bold(": "+msg))
+	headerPrefix := meta.color(bold(meta.icon+" "+label)) + bold(": ")
+	out = append(out, wrapIndented(headerPrefix, msg))
 
 	if err.File != "" || err.Line > 0 {
 		var parts []string
@@ -1011,7 +1109,7 @@ func Format(err *LunexError) string {
 			if i == 0 {
 				prefix = hintColor("  help: ")
 			}
-			out = append(out, prefix+s)
+			out = append(out, wrapIndented(prefix, s))
 		}
 	}
 
@@ -1063,7 +1161,7 @@ func Format(err *LunexError) string {
 	if len(err.Notes) > 0 {
 		out = append(out, "")
 		for _, note := range err.Notes {
-			out = append(out, brightMagenta("  note: ")+note)
+			out = append(out, wrapIndented(brightMagenta("  note: "), note))
 		}
 	}
 
