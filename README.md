@@ -62,9 +62,6 @@ EOF
 lunex run hello.lx
 ```
 
-## others 
-[![Build with Ona](https://ona.com/build-with-ona.svg)](https://app.ona.com/#https://github.com/Megamexlevi2/lunex-language)
-
 ---
 
 ## Language at a Glance
